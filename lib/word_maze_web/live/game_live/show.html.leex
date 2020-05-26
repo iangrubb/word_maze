@@ -1,0 +1,22 @@
+
+
+
+
+
+<div id="game-screen">
+  <div id="game-board" style="transform: translateX(-<%= 0 %>px)">
+    <%= for y <- 0..22, x <- 0..22 do %>
+      <div class="board-tile"></div>
+    <% end %>
+  </div>
+</div>
+
+<div id="game-letters">
+  <%= for x <- 0..6 do %>
+    <div class="hand-letter"></div>
+  <% end %>
+</div>
+
+<div id="game-controls">controls</div>
+
+<div id="game-scores">scores</div>
