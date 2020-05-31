@@ -5,36 +5,49 @@ defmodule WordMazeWeb.GameLive.Show do
   alias WordMaze.Gameplay.GameRuntime
   alias WordMazeWeb.GameLive.Monitor
 
-
   @impl true
-  def mount(_params, %{"game_id" => game_id}, socket) do
+  def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
 
-    game_state = Gameplay.connect_player_to_game(game_id, 1)
+    if connected?(socket) do
 
-    # Connect to PubSub. Future interaction between live_view and game runtime involves:
-      # The live_view casting to the runtime.
-      # The runtime broadcasting updates.
+      game_state = Monitor.new_connection(self(), player_id, game_id)
 
-    # Set up a game runtime supervisor to allow empty room shutoff.
-    # Maybe this can signal the corresponding game, so that games dont need a list of their players.
+      WordMazeWeb.Endpoint.subscribe("game:server:#{game_id}")
 
 
-    new_socket =
-      socket
-      |> assign(game_state)
-      |> new_ui()
+      # Ideally the monitor would be the one looking for games without live servers and would shut them down after an appropriate period of time.
 
 
-    # Assigns
-    #   Blocks
-    #   Player Locations
-    #   Revealed Blocks
+      new_socket =
+        socket
+        |> assign(game_state)
+        |> new_ui()
 
 
-    {:ok, new_socket}
+      # Assigns
+        # Blocks
+        # Player Locations
+        # Revealed Blocks
+
+      # Events
+        # Movement
+
+      # Updates
+        #
+
+      # The whole game state should be updated by the runtime and sent here, where more about the view logic is determined.
+        # In progress words don't need to interact with the runtime, or facts about what a player currently sees.
+        # What a player can see and what there is should be put together here to determine what's displayed.
+
+
+
+      {:ok, new_socket}
+    else
+      {:ok, assign(socket, :connected, false)}
+    end
+
 
   end
-
 
 
 
@@ -136,7 +149,8 @@ defmodule WordMazeWeb.GameLive.Show do
   def new_ui(socket) do
 
     defaults = %{
-      revealed_blocks: []
+      revealed_blocks: [],
+      connected: true
     }
 
     socket

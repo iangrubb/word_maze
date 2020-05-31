@@ -18,7 +18,7 @@ defmodule WordMaze.Application do
       # Start the Endpoint (http/https)
       WordMazeWeb.Endpoint,
       # Start game live view monitor
-      WordMazeWeb.GameLive.Monitor,
+      {WordMazeWeb.GameLive.Monitor, name: WordMazeWeb.GameLive.Monitor},
       # Start ongoing game registry
       {Registry, keys: :unique, name: WordMaze.GameRegistry},
       # Start game runtime supervisor

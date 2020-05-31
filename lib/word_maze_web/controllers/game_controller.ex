@@ -28,7 +28,8 @@ defmodule WordMazeWeb.GameController do
 
   def show(conn, %{"id" => id}) do
     game = Gameplay.get_game!(id)
-    render(conn, "show.html", game: game)
+    player_id = :rand.uniform(10000)
+    render(conn, "show.html", game: game, player_id: player_id)
   end
 
   # def edit(conn, %{"id" => id}) do

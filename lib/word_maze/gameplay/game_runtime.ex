@@ -29,27 +29,42 @@ defmodule WordMaze.Gameplay.GameRuntime do
   ]
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts[:player_id], opts)
+    GenServer.start_link(__MODULE__, {opts[:player_id], opts[:game_id]} , opts)
   end
 
   # Runtime API
 
-  def live_state(pid) do
-    GenServer.call(pid, :live_state)
+  def get_current_state(pid, player_id) do
+    GenServer.call(pid, {:get_current_state, player_id})
   end
-
 
 
 
 
   # Runtime Callbacks
 
-  def init(player_id) do
+  def init({player_id, game_id}) do
+    WordMazeWeb.Endpoint.subscribe("game:client:#{game_id}")
     {:ok, new_game_state(player_id)}
   end
 
-  def handle_call(:live_state, _from, state) do
-    {:reply, state, state}
+  def handle_call({:get_current_state, player_id}, _from, state) do
+
+    new_players = Map.put(state.players, player_id, :present)
+
+    # These players are those who have been active in the game, not necessarily the present players.
+
+    {:reply, state, %{state | players: new_players}}
+  end
+
+  def handle_info(%{event: "departure", payload: %{player_id: player_id}}, state) do
+
+    {_removed, new_players} = Map.pop(state.players, player_id)
+
+    IO.puts "The players after a departure:"
+    IO.inspect new_players
+
+    {:noreply, %{ state | players: new_players }}
   end
 
 
@@ -65,7 +80,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def new_game_state(player_id) do
 
     defaults = %{
-      players: [player_id],
+      players: %{},
       player_x: 1,
       player_y: 1,
       blocks: %{}
