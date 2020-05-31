@@ -97,21 +97,4 @@ defmodule WordMaze.Gameplay do
     Game.changeset(game, attrs)
   end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 end

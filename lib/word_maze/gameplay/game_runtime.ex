@@ -38,12 +38,21 @@ defmodule WordMaze.Gameplay.GameRuntime do
     GenServer.call(pid, {:get_current_state, player_id})
   end
 
+  def get_pid(pid) do
+    GenServer.call(pid, :get_pid)
+  end
+
+  def handle_call(:get_pid, _from, state) do
+    {:reply, self(), state}
+  end
+
 
 
 
   # Runtime Callbacks
 
   def init({player_id, game_id}) do
+    IO.puts "STARTING A GAME"
     WordMazeWeb.Endpoint.subscribe("game:client:#{game_id}")
     {:ok, new_game_state(player_id)}
   end
@@ -54,7 +63,9 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
     # These players are those who have been active in the game, not necessarily the present players.
 
-    {:reply, state, %{state | players: new_players}}
+    new_state = %{state | players: new_players}
+
+    {:reply, new_state, new_state}
   end
 
   def handle_info(%{event: "departure", payload: %{player_id: player_id}}, state) do

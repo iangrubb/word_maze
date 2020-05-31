@@ -5,8 +5,6 @@ defmodule WordMazeWeb.GameLive.Monitor do
   alias WordMaze.Gameplay
   alias WordMaze.Gameplay.GameRuntime
 
-  # DynamicSupervisor.terminate_child(WordMaze.GameRuntimeSupervisor, pid)
-
   def start_link( opts ) do
     GenServer.start_link(__MODULE__, :ok, opts)
   end
@@ -33,9 +31,6 @@ defmodule WordMazeWeb.GameLive.Monitor do
         false -> Map.put(games, game_id, [ player_id ])
       end
 
-    IO.puts "After new one coming:"
-    IO.inspect {new_games, new_views}
-
     {:reply, current_game_state, {new_games, new_views}}
   end
 
@@ -44,17 +39,33 @@ defmodule WordMazeWeb.GameLive.Monitor do
     {{player_id, game_id}, new_views} = Map.pop(views, pid)
 
     { player_list , remaining_games } = Map.pop(games, game_id)
-    new_games = Map.put(remaining_games, game_id,  Enum.reject(player_list, fn p -> p == player_id end))
+    new_players = Enum.reject(player_list, fn p -> p == player_id end)
+    new_games = Map.put(remaining_games, game_id,  new_players)
 
-    IO.puts "After old one leaving:"
-    IO.inspect {new_games, new_views}
+    if new_players == [] do
 
+      my_pid = self()
+      spawn(fn ->
+        :timer.sleep(5000);
+        send(my_pid, {:consider_shutdown, game_id})
+      end)
+
+    end
 
     {:noreply, {new_games, new_views}}
   end
 
+  def handle_info({:consider_shutdown, game_id}, {games, views}) do
 
+    case games[game_id] do
+      [] ->
+        DynamicSupervisor.terminate_child(WordMaze.GameRuntimeSupervisor, find_pid(game_id) )
+        { _ , new_games} = Map.pop(games, game_id)
+        {:noreply, {new_games, views}}
+      _  -> {:noreply, {games, views}}
+    end
 
+  end
 
   defp connect_player_to_game(game_id, user_id) do
 
@@ -67,16 +78,9 @@ defmodule WordMazeWeb.GameLive.Monitor do
     {:via, Registry, {WordMaze.GameRegistry, game_id}}
   end
 
-
-
-
-
-
-
-
-
-
-
+  defp find_pid(game_id) do
+    GameRuntime.get_pid(find_runtime(game_id))
+  end
 
 
 end
