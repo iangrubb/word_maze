@@ -13,8 +13,16 @@ defmodule WordMaze.Application do
       WordMazeWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: WordMaze.PubSub},
+      # Start game presence tracking
+      WordMazeWeb.Presence,
       # Start the Endpoint (http/https)
-      WordMazeWeb.Endpoint
+      WordMazeWeb.Endpoint,
+      # Start game live view monitor
+      WordMazeWeb.GameLive.Monitor,
+      # Start ongoing game registry
+      {Registry, keys: :unique, name: WordMaze.GameRegistry},
+      # Start game runtime supervisor
+      {DynamicSupervisor, strategy: :one_for_one, name: WordMaze.GameRuntimeSupervisor}
       # Start a worker by calling: WordMaze.Worker.start_link(arg)
       # {WordMaze.Worker, arg}
     ]

@@ -1,14 +1,36 @@
 
 
 
+<div id="game-screen" phx-window-keydown="keydown" phx-throttle="100">
 
+  <div id="game-board" style="transform: translate(calc(<%= if @player_x < 6, do: 0, else: if @player_x > 17, do: 12, else: @player_x - 5  %>/11 * -50%), calc(<%= if @player_y < 6, do: 0, else: if @player_y > 17, do: 12, else: @player_y - 5 %>/11 * -50%))">
 
-<div id="game-screen">
-  <div id="game-board" style="transform: translateX(-<%= 0 %>px)">
-    <%= for y <- 0..22, x <- 0..22 do %>
-      <div class="board-tile"></div>
+    <%# Base tiles for game board %>
+    <%= for { _ , %{x: x, y: y, class: class} } <- @blocks do %>
+      <div class="<%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;"></div>
     <% end %>
+
+
+    <div class="character" style="transform: translate(<%= character_translate(@player_x, @player_y) %>);">
+    </div>
+
+    <%# Overlayed screen on game board %>
+    <div id="screen-overlay">
+      <div class="overlay-shadow"></div>
+      <div class="overlay-revealed">
+        <%= for {x, y} <- @revealed_blocks do %>
+          <div class="revealed-tile" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;"></div>
+        <% end %>
+      </div>
+      <div class="overlay-light" style="transform: translate(<%= light_translate(@player_x, @player_y) %>);">
+        <div class="overlay-light-contents" style="<%= light_path(@player_x, @player_y, @blocks) %>" >
+        </div>
+      </div>
+    </div>
+
+
   </div>
+
 </div>
 
 <div id="game-letters">
@@ -17,6 +39,16 @@
   <% end %>
 </div>
 
-<div id="game-controls">controls</div>
+<div id="game-controls">
+
+
+  <div class="test0">
+
+    <div class="test1"></div>
+    <div class="test2"></div>
+
+  </div>
+
+</div>
 
 <div id="game-scores">scores</div>

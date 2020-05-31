@@ -6,7 +6,7 @@ defmodule WordMaze.Gameplay do
   import Ecto.Query, warn: false
   alias WordMaze.Repo
 
-  alias WordMaze.Gameplay.{ Game, GameUser }
+  alias WordMaze.Gameplay.{ Game, GameUser, GameRuntime}
 
   @doc """
   Returns the list of games.
@@ -96,6 +96,38 @@ defmodule WordMaze.Gameplay do
   def change_game(%Game{} = game, attrs \\ %{}) do
     Game.changeset(game, attrs)
   end
+
+
+
+
+
+  def connect_player_to_game(game_id, user_id) do
+
+    # In cases of successful connection, something should be recorded in database.
+
+    case DynamicSupervisor.start_child(WordMaze.GameRuntimeSupervisor, {GameRuntime, name: find_runtime(game_id), player_id: user_id}) do
+      {:ok, pid} ->
+        IO.puts "Starting game server"
+        GameRuntime.live_state(pid)
+      {:error, {:already_started, pid}} ->
+        IO.puts "Noticed started game"
+        GameRuntime.live_state(pid)
+    end
+  end
+
+  def find_runtime(game_id) do
+    {:via, Registry, {WordMaze.GameRegistry, game_id}}
+  end
+
+
+
+
+
+
+
+
+
+
 
 
 

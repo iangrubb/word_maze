@@ -63,7 +63,9 @@ body{
   max-height: 94vw;
   
   overflow: hidden;
-  background: lightcoral;
+  background: rgb(56, 54, 54);
+
+  position: relative;
 
 }
 
@@ -102,28 +104,158 @@ body{
 
 
 
-
 #game-board{
+  width: 230%;
+  height: 230%;
+
+  display: grid;
+  grid-template-rows: repeat(23, calc(1/23 * 100%));
+  grid-template-columns: repeat(23, calc(1/23 * 100%));
+
+  transition: transform 0.2s ease;
+
+  position: relative;
+
+}
+
+.border_tl {
+  background: rgb(68, 46, 37);
+}
+
+.border_h {
+  background: rgb(68, 46, 37);
+}
+
+.border_tr {
+  background: rgb(68, 46, 37);
+}
+
+.border_v {
+  background: rgb(68, 46, 37);
+}
+
+.border_br {
+  background: rgb(68, 46, 37);
+}
+
+.border_bl {
+  background: rgb(68, 46, 37);
+}
+
+.path {
+  background: rgb(138, 125, 125);
+  margin: 2px;
+  border-radius: 8px;
+}
+
+.wall {
+  background: rgb(68, 46, 37);
+}
+
+
+
+
+#screen-overlay {
+  position: absolute;
+  z-index: 3;
+
+  width: 100%;
+  height: 100%;
+
+  mix-blend-mode: multiply;
+
+  
+}
+
+.overlay-shadow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgb(0, 0, 0);
+  
+}
+
+
+.overlay-revealed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  
   width: 100%;
   height: 100%;
 
   display: grid;
+  grid-template-columns: repeat(23, calc(1/23 * 100%));
+  grid-template-rows: repeat(23, calc(1/23 * 100%));
+}
+
+.revealed-tile {
+
+  background: rgb(87, 81, 72);
+
+  grid-area: 2 / 2 / 3 /3;
+
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+
+  position: relative;
+  top: -4px;
+  left: -4px;
+
+}
+
+
+
+
+.overlay-light {
+  position: absolute;
+  top: 0;
+  left: 0;
   
-  grid-template-rows: repeat(23, calc(1/11 * 100%));
-  grid-template-columns: repeat(23, calc(1/11 * 100%));
+  width: calc(11/23 * 100%);
+  height: calc(11/23 * 100%);
+
+  transition: all 0.1s linear;
+}
+
+.overlay-light-contents {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: radial-gradient(circle, rgb(243, 235, 213) 0%, rgb(49, 44, 37) 75%, rgb(8, 7, 1) 100%);
+
+  transition: all 0.1s linear;
+
+}
+
+
+
+
+
+
+
+.character {
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  
+  height: calc(1/46 * 100%);
+  width: calc(1/46 * 100%);
+  border-radius: 50%;
+  background: red;
 
   transition: transform 0.2s ease;
-
+  
 }
 
-.board-tile {
-  border-radius: 2px;
-  background: gray;
-}
 
 
 .hand-letter {
-
   width: 12vw;
   height: 12vw;
   max-width: 48px;
@@ -132,3 +264,6 @@ body{
   border-radius: 2px;
   background: gray;
 }
+
+
+
