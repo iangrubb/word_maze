@@ -29,21 +29,17 @@ defmodule WordMaze.Gameplay.GameRuntime do
   ]
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, {opts[:player_id], opts[:game_id]} , opts)
+    GenServer.start_link(__MODULE__, opts[:game_id] , opts)
   end
 
   # Runtime API
 
-  def get_current_state(pid, player_id) do
-    GenServer.call(pid, {:get_current_state, player_id})
+  def attempt_player_join(pid, player_id) do
+    GenServer.call(pid, {:attempt_player_join, player_id})
   end
 
   def get_pid(pid) do
     GenServer.call(pid, :get_pid)
-  end
-
-  def handle_call(:get_pid, _from, state) do
-    {:reply, self(), state}
   end
 
 
@@ -51,29 +47,42 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   # Runtime Callbacks
 
-  def init({player_id, game_id}) do
-    IO.puts "STARTING A GAME"
+  def init(game_id) do
     WordMazeWeb.Endpoint.subscribe("game:client:#{game_id}")
-    {:ok, new_game_state(player_id)}
+    {:ok, new_game_state()}
   end
 
-  def handle_call({:get_current_state, player_id}, _from, state) do
+  def handle_call(:get_pid, _from, state) do
+    {:reply, self(), state}
+  end
 
-    new_players = Map.put(state.players, player_id, :present)
+  def handle_call({:attempt_player_join, player_id}, _from, state) do
 
-    # These players are those who have been active in the game, not necessarily the present players.
+      cond do
+        Enum.count(state.players, fn {_key, val} -> val.id == player_id  end) > 0 ->
+          # Old player is rejoining
+          IO.puts "OLD RETURNS"
+          IO.puts player_id
+          IO.inspect state.players
+          {:reply, state, state}
+        Enum.count(state.players) < 4 ->
+          # New player has space to be added
+          IO.puts "NEW JOINS"
+          new_state = %{state | players: Map.put(state.players, Enum.count(state.players) + 1, %{id: player_id})}
+          IO.inspect new_state.players
+          {:reply, new_state, new_state}
+        true ->
+          # New player has no space and can't join
+          IO.puts "New Denied"
+          IO.inspect state.players
+          {:reply, :full, state}
+      end
 
-    new_state = %{state | players: new_players}
-
-    {:reply, new_state, new_state}
   end
 
   def handle_info(%{event: "departure", payload: %{player_id: player_id}}, state) do
 
     {_removed, new_players} = Map.pop(state.players, player_id)
-
-    IO.puts "The players after a departure:"
-    IO.inspect new_players
 
     {:noreply, %{ state | players: new_players }}
   end
@@ -82,18 +91,12 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
 
 
-
-
-
-
   # Gameplay Logic
 
-  def new_game_state(player_id) do
+  def new_game_state() do
 
     defaults = %{
       players: %{},
-      player_x: 1,
-      player_y: 1,
       blocks: %{}
     }
 

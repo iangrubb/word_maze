@@ -19,19 +19,25 @@ defmodule WordMazeWeb.GameLive.Monitor do
 
   def handle_call({:new_connection, pid, player_id, game_id}, _ , {games, views}) do
 
-    current_game_state = connect_player_to_game(game_id, player_id)
-    Process.monitor(pid)
-    # add case check later for exceeding player count limit
 
-    new_views = Map.put(views, pid, {player_id, game_id})
 
-    new_games =
-      case Map.has_key?(games, game_id) do
-        true  -> Map.put(games, game_id, [ player_id | games[game_id] ])
-        false -> Map.put(games, game_id, [ player_id ])
-      end
 
-    {:reply, current_game_state, {new_games, new_views}}
+
+    case connect_player_to_game(game_id, player_id) do
+      :full ->
+        {:reply, :full, {games, views}}
+      current_game_state ->
+        Process.monitor(pid)
+        new_views = Map.put(views, pid, {player_id, game_id})
+        new_games =
+        case Map.has_key?(games, game_id) do
+          true  -> Map.put(games, game_id, [ player_id | games[game_id] ])
+          false -> Map.put(games, game_id, [ player_id ])
+        end
+      {:reply, current_game_state, {new_games, new_views}}
+    end
+
+
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {games, views}) do
@@ -70,7 +76,7 @@ defmodule WordMazeWeb.GameLive.Monitor do
   defp connect_player_to_game(game_id, user_id) do
 
     DynamicSupervisor.start_child(WordMaze.GameRuntimeSupervisor, {GameRuntime, name: find_runtime(game_id), player_id: user_id, game_id: game_id})
-    GameRuntime.get_current_state(find_runtime(game_id), user_id)
+    GameRuntime.attempt_player_join(find_runtime(game_id), user_id)
 
   end
 
