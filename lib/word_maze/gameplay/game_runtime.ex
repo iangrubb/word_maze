@@ -32,6 +32,8 @@ defmodule WordMaze.Gameplay.GameRuntime do
     GenServer.start_link(__MODULE__, opts[:game_id] , opts)
   end
 
+
+
   # Runtime API
 
   def attempt_player_join(pid, player_id) do
@@ -44,11 +46,11 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
 
 
-
   # Runtime Callbacks
 
   def init(game_id) do
     WordMazeWeb.Endpoint.subscribe("game:client:#{game_id}")
+    IO.puts "Starting #{game_id}"
     {:ok, new_game_state()}
   end
 
@@ -57,7 +59,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
   end
 
   def handle_call({:attempt_player_join, player_id}, _from, state) do
-
       cond do
         Enum.count(state.players, fn {_key, val} -> val.id == player_id  end) > 0 ->
           # Old player is rejoining
@@ -77,7 +78,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
           IO.inspect state.players
           {:reply, :full, state}
       end
-
   end
 
   def handle_info(%{event: "departure", payload: %{player_id: player_id}}, state) do

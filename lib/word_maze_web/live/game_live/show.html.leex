@@ -1,7 +1,6 @@
 
 <%= if @connected do %>
 
-
   <div id="game-screen" phx-window-keydown="keydown" phx-throttle="100">
 
     <div id="game-board" style="transform: translate(calc(<%= if      1     < 6, do: 0, else: if      1     > 17, do: 12, else:      1     - 5  %>/11 * -50%), calc(<%= if 1 < 6, do: 0, else: if 1 > 17, do: 12, else: 1 - 5 %>/11 * -50%))">
@@ -28,7 +27,6 @@
           </div>
         </div>
       </div>
-
 
     </div>
 

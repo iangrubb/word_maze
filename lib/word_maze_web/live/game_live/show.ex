@@ -2,14 +2,14 @@ defmodule WordMazeWeb.GameLive.Show do
   use WordMazeWeb, :live_view
 
   alias WordMaze.Gameplay
-  alias WordMaze.Gameplay.GameRuntime
-  alias WordMazeWeb.GameLive.Monitor
+  alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor }
+
 
   @impl true
   def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
 
     if connected?(socket) do
-      case Monitor.new_connection(self(), player_id, game_id) do
+      case RuntimeMonitor.new_connection(self(), player_id, game_id) do
         :full ->
           {:ok, assign(socket, :connected, false)}
         game_state ->

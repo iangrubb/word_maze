@@ -1,4 +1,4 @@
-defmodule WordMazeWeb.GameLive.Monitor do
+defmodule WordMaze.Gameplay.RuntimeMonitor do
 
   use GenServer
 
