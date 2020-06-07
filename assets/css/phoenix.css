@@ -247,7 +247,6 @@ body{
   height: calc(1/46 * 100%);
   width: calc(1/46 * 100%);
   border-radius: 50%;
-  background: red;
 
   transition: transform 0.2s ease;
   

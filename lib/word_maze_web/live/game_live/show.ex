@@ -35,7 +35,53 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
 
- # Functions for computing derived data
+ # Functions for computing view properties
+
+ def screen_scroll(location) do
+  {x, y} = location
+  x_translate =
+    cond do
+      x < 6 -> 0
+      x > 17 -> 12
+      true -> x - 5
+    end
+  y_translate =
+    cond do
+      y < 6 -> 0
+      y > 17 -> 12
+      true -> y - 5
+    end
+  "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
+ end
+
+
+ def place_player(player) do
+  {x, y} = player.location
+  location = "calc( #{x} * 200% + 50% ), calc( #{y} * 200% + 50% )"
+  "background: #{player.color}; transform: translate(#{location});"
+ end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  def passable_space(x, y, blocks, direction), do: passable_space(x, y, blocks, direction, 0)
 
@@ -94,9 +140,6 @@ defmodule WordMazeWeb.GameLive.Show do
 
  end
 
- def character_translate(player_x, player_y) do
-  "calc( #{player_x} * 200% + 50% ), calc( #{player_y} * 200% + 50% )"
- end
 
 
 #  <div id="screen-overlay">
@@ -114,26 +157,7 @@ defmodule WordMazeWeb.GameLive.Show do
 
 
 
- def screen_scroll(location) do
 
-  {x, y} = location
-
-  x_translate =
-    cond do
-      x < 6 -> 0
-      x > 17 -> 12
-      true -> x - 5
-    end
-
-  y_translate =
-    cond do
-      y < 6 -> 0
-      y > 17 -> 12
-      true -> y - 5
-    end
-
-  "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
- end
 
 
 
