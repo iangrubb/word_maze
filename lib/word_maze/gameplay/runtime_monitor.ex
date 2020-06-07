@@ -54,7 +54,7 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
   def handle_info({:consider_shutdown, game_id}, {games, views}) do
     case games[game_id] do
       [] ->
-        DynamicSupervisor.terminate_child(WordMaze.GameRuntimeSupervisor, find_pid(game_id) )
+        DynamicSupervisor.terminate_child(WordMaze.GameRuntimeSupervisor, find_runtime_pid(game_id) )
         { _ , new_games} = Map.pop(games, game_id)
         {:noreply, {new_games, views}}
       _  -> {:noreply, {games, views}}
@@ -70,7 +70,7 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
     {:via, Registry, {WordMaze.GameRegistry, game_id}}
   end
 
-  defp find_pid(game_id) do
+  defp find_runtime_pid(game_id) do
     GameRuntime.get_pid(find_runtime(game_id))
   end
 

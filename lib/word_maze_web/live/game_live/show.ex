@@ -4,21 +4,29 @@ defmodule WordMazeWeb.GameLive.Show do
   alias WordMaze.Gameplay
   alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor }
 
-
   @impl true
   def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
 
     if connected?(socket) do
+
+      WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
+
       case RuntimeMonitor.new_connection(self(), player_id, game_id) do
         :full ->
+          WordMazeWeb.Endpoint.unsubscribe("game:#{game_id}")
           {:ok, assign(socket, :connected, false)}
         game_state ->
-          WordMazeWeb.Endpoint.subscribe("game:server:#{game_id}")
+          local_defaults =
+            %{
+              connected: true,
+              typing: "",
+              discarding: false,
+              player_id: player_id
+            }
           new_socket =
             socket
-            |> assign(:full, false)
             |> assign(game_state)
-            |> new_ui()
+            |> assign(local_defaults)
           {:ok, new_socket}
       end
     else
@@ -91,6 +99,42 @@ defmodule WordMazeWeb.GameLive.Show do
  end
 
 
+#  <div id="screen-overlay">
+#         <div class="overlay-shadow"></div>
+#         <div class="overlay-revealed">
+#           <%= for {x, y} <- @viewed_spaces do %>
+#             <div class="revealed-tile" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;"></div>
+#           <% end %>
+#         </div>
+#         <div class="overlay-light" style="transform: translate(<%= light_translate(  1   , 1) %>);">
+#           <div class="overlay-light-contents" style="<%= light_path(   1   , 1, @spaces) %>" >
+#           </div>
+#         </div>
+#       </div>
+
+
+
+ def screen_scroll(location) do
+
+  {x, y} = location
+
+  x_translate =
+    cond do
+      x < 6 -> 0
+      x > 17 -> 12
+      true -> x - 5
+    end
+
+  y_translate =
+    cond do
+      y < 6 -> 0
+      y > 17 -> 12
+      true -> y - 5
+    end
+
+  "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
+ end
+
 
 
 
@@ -119,24 +163,6 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
 
-
-
-
-  # UI logic that pertains to just the view of a single player
-
-  def new_ui(socket) do
-
-    defaults = %{
-      revealed_blocks: [],
-      connected: true
-    }
-
-    socket
-    |> assign(defaults)
-    |> add_revealed_blocks()
-
-  end
-
   def add_revealed_blocks(socket) do
     %{blocks: blocks, revealed_blocks: revealed_blocks} = socket.assigns
 
@@ -144,8 +170,6 @@ defmodule WordMazeWeb.GameLive.Show do
     player_y = 1
 
     {up, right, down, left} = light_dimensions(player_x, player_y, blocks)
-
-
 
     vertical_blocks = for n <- (player_y - up)..(player_y + down), do: {player_x, n}
     horizontal_blocks = for n <- (player_x - left)..(player_x + right), do: {n, player_y}
@@ -158,11 +182,6 @@ defmodule WordMazeWeb.GameLive.Show do
 
     assign(socket, :revealed_blocks, new_revealed_blocks)
   end
-
-
-
-
-
 
 
 
