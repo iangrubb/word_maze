@@ -42,8 +42,9 @@ defmodule WordMaze.Gameplay.GameRuntime do
           # New player has space to be added
           new_state = initialize_player_state(state, player_id)
           player_state = extract_state_for_player(new_state, player_id)
+          new_player_data = player_state.players[player_id]
           IO.puts "NEW JOINS"
-          # IO.inspect player_state
+          WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_player", %{player: new_player_data, player_id: player_id})
           {:reply, player_state, new_state}
         true ->
           # New player has no space and can't join
@@ -251,23 +252,14 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   # Movement Logic
 
-  # WordMazeWeb.Endpoint.broadcast("game:#{socket.assigns.game_id}", "client:move",  %{player_id: socket.assigns.player_id, direction: key})
-
-  # %{event: "client:move", payload: %{player_id: player_id, direction: direction}}
-
   def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}} = message, state) do
     updated_state = attempt_move(state, player_id, direction)
     {:noreply, updated_state}
   end
 
-
-
   defp attempt_move(state, player_id, direction) do
 
     {x, y} = state.players[player_id].location
-
-    # FIX THIS NEXT
-
 
     target =
       case direction do
@@ -285,9 +277,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
           %{state | players: Map.put(state.players, player_id, new_player)}
         false -> state
     end
-
   end
-
 
 
   # def add_revealed_blocks(socket) do

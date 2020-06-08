@@ -185,12 +185,15 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
   def handle_info(%{event: "server:new_location", payload: %{player_id: player_id, location: location}} , socket) do
-    IO.inspect(socket.assigns.players)
-    IO.puts(player_id)
     player = socket.assigns.players[player_id]
     new_player = %{ player | location: location}
     new_players = Map.put(socket.assigns.players, player_id, new_player)
     {:noreply, assign(socket, :players, new_players )}
+  end
+
+  def handle_info(%{event: "server:new_player", payload: %{player: player, player_id: player_id} }, socket) do
+    players = Map.put(socket.assigns.players, player_id, player)
+    {:noreply, assign(socket, :players, players)}
   end
 
 
