@@ -1,5 +1,7 @@
 defmodule WordMaze.Gameplay.GameRuntime do
 
+  alias WordMaze.Gameplay.GameHelpers
+
   use GenServer
 
   def start_link(opts) do
@@ -193,7 +195,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
       |> set_initial_hand()
       |> set_initial_view(state.spaces)
 
-
     %{state | players: Map.put(state.players, player_id, player_state)}
   end
 
@@ -230,8 +231,8 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
     # Finish this by calculating views
 
-    viewed_spaces = []
-    viewed_letters = []
+    viewed_spaces = GameHelpers.visible_spaces(spaces, player_state.location)
+    viewed_letters = Enum.filter(viewed_spaces, fn address -> spaces[address].letter !== nil end)
 
     player_state
     |> Map.put(:viewed_spaces, viewed_spaces)
@@ -273,40 +274,27 @@ defmodule WordMaze.Gameplay.GameRuntime do
         true ->
           WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_location", %{player_id: player_id, location: target})
           player = state.players[player_id]
-          new_player = %{ player | location: target }
+
+          viewing_spaces = GameHelpers.visible_spaces(state.spaces, target)
+          viewed_spaces =
+            player.viewed_spaces
+            |> Enum.concat(viewing_spaces)
+            |> Enum.uniq()
+
+          viewing_letters = Enum.filter(viewing_spaces, fn address -> state.spaces[address].letter !== nil end)
+          viewed_letters =
+            player.viewed_letters
+            |> Enum.concat(viewing_letters)
+            |> Enum.uniq()
+
+
+
+          new_player = %{ player | location: target, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters }
+          IO.inspect new_player
           %{state | players: Map.put(state.players, player_id, new_player)}
         false -> state
     end
   end
-
-
-  # def add_revealed_blocks(socket) do
-  #   %{blocks: blocks, revealed_blocks: revealed_blocks} = socket.assigns
-
-  #   player_x = 1
-  #   player_y = 1
-
-  #   {up, right, down, left} = light_dimensions(player_x, player_y, blocks)
-
-  #   vertical_blocks = for n <- (player_y - up)..(player_y + down), do: {player_x, n}
-  #   horizontal_blocks = for n <- (player_x - left)..(player_x + right), do: {n, player_y}
-
-  #   new_revealed_blocks =
-  #     revealed_blocks
-  #     |> Enum.concat(vertical_blocks)
-  #     |> Enum.concat(horizontal_blocks)
-  #     |> Enum.uniq()
-
-  #   assign(socket, :revealed_blocks, new_revealed_blocks)
-  # end
-
-
-
-
-
-
-
-
 
 
 

@@ -2,7 +2,7 @@ defmodule WordMazeWeb.GameLive.Show do
   use WordMazeWeb, :live_view
 
   alias WordMaze.Gameplay
-  alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor }
+  alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor, GameHelpers }
 
   @impl true
   def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
@@ -71,75 +71,35 @@ defmodule WordMazeWeb.GameLive.Show do
 
 
 
+#  def light_path(player_x, player_y, blocks) do
+
+#   {up, right, down, left} = light_dimensions(player_x, player_y, blocks)
+
+#   "clip-path: polygon(
+#     calc((5/11) * 100% - 4px)            calc((5/11) * 100% - 4px),
+#     calc((5/11) * 100% - 4px)            calc((#{5 - up}/11) * 100% - 4px),
+#     calc((6/11) * 100% + 4px)            calc((#{5 - up}/11) * 100% - 4px),
+#     calc((6/11) * 100% + 4px)            calc((5/11) * 100% - 4px),
+#     calc((#{6 + right}/11) * 100% + 4px) calc( 5 / 11 * 100% - 4px),
+#     calc((#{6 + right}/11) * 100% + 4px) calc( 6 / 11 * 100% + 4px),
+#     calc((6/11) * 100% + 4px)            calc((6/11) * 100% + 4px),
+#     calc((6/11) * 100% + 4px)            calc((#{6 + down}/11) * 100% + 4px),
+#     calc((5/11) * 100% - 4px)            calc((#{6 + down}/11) * 100% + 4px),
+#     calc((5/11) * 100% - 4px)            calc((6/11) * 100% + 4px),
+#     calc((#{5 - left}/11) * 100% - 4px)  calc((6/11) * 100% + 4px),
+#     calc((#{5 - left}/11) * 100% - 4px)  calc((5/11) * 100% - 4px))
+#   "
+
+#  end
+
+#  def light_translate(player_x, player_y) do
+
+#   "calc(#{player_x - 5} / 11 * 100%), calc(#{player_y - 5}/ 11 * 100%)"
+
+#  end
 
 
 
-
-
-
-
-
-
-
-
-
-
- def passable_space(x, y, blocks, direction), do: passable_space(x, y, blocks, direction, 0)
-
- def passable_space(x, y, blocks, direction, acc) do
-
-  {next_x, next_y} = next_location =
-    case direction do
-      :up -> {x, y - 1}
-      :right -> {x + 1, y}
-      :down -> {x, y + 1}
-      :left -> {x - 1, y}
-    end
-
-  case blocks[next_location].passable do
-
-    true -> passable_space(next_x, next_y, blocks, direction, acc + 1)
-    false -> acc
-
-  end
-
- end
-
- def light_dimensions(player_x, player_y, blocks) do
-
-  {passable_space(player_x, player_y, blocks, :up),
-  passable_space(player_x, player_y, blocks, :right),
-  passable_space(player_x, player_y, blocks, :down),
-  passable_space(player_x, player_y, blocks, :left)}
-
- end
-
- def light_path(player_x, player_y, blocks) do
-
-  {up, right, down, left} = light_dimensions(player_x, player_y, blocks)
-
-  "clip-path: polygon(
-    calc((5/11) * 100% - 4px)            calc((5/11) * 100% - 4px),
-    calc((5/11) * 100% - 4px)            calc((#{5 - up}/11) * 100% - 4px),
-    calc((6/11) * 100% + 4px)            calc((#{5 - up}/11) * 100% - 4px),
-    calc((6/11) * 100% + 4px)            calc((5/11) * 100% - 4px),
-    calc((#{6 + right}/11) * 100% + 4px) calc( 5 / 11 * 100% - 4px),
-    calc((#{6 + right}/11) * 100% + 4px) calc( 6 / 11 * 100% + 4px),
-    calc((6/11) * 100% + 4px)            calc((6/11) * 100% + 4px),
-    calc((6/11) * 100% + 4px)            calc((#{6 + down}/11) * 100% + 4px),
-    calc((5/11) * 100% - 4px)            calc((#{6 + down}/11) * 100% + 4px),
-    calc((5/11) * 100% - 4px)            calc((6/11) * 100% + 4px),
-    calc((#{5 - left}/11) * 100% - 4px)  calc((6/11) * 100% + 4px),
-    calc((#{5 - left}/11) * 100% - 4px)  calc((5/11) * 100% - 4px))
-  "
-
- end
-
- def light_translate(player_x, player_y) do
-
-  "calc(#{player_x - 5} / 11 * 100%), calc(#{player_y - 5}/ 11 * 100%)"
-
- end
 
 
 
