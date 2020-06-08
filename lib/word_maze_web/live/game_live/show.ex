@@ -55,11 +55,15 @@ defmodule WordMazeWeb.GameLive.Show do
   "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
  end
 
-
  def place_player(player) do
   {x, y} = player.location
   location = "calc( #{x} * 200% + 50% ), calc( #{y} * 200% + 50% )"
   "background: #{player.color}; transform: translate(#{location});"
+ end
+
+ def reveal_tile(address) do
+  {x, y} = address
+  "grid-area: #{y + 1} / #{x + 1} / #{y + 2} / #{x + 2};"
  end
 
 
@@ -144,11 +148,44 @@ defmodule WordMazeWeb.GameLive.Show do
     {:noreply, socket}
   end
 
-  def handle_info(%{event: "server:new_location", payload: %{player_id: player_id, location: location}} , socket) do
+  def handle_info(%{event: "server:new_location", payload:
+    %{player_id: player_id,
+      location: location,
+      viewing_spaces: viewing_spaces,
+      viewing_letters: viewing_letters}}, socket) do
+
     player = socket.assigns.players[player_id]
     new_player = %{ player | location: location}
     new_players = Map.put(socket.assigns.players, player_id, new_player)
-    {:noreply, assign(socket, :players, new_players )}
+
+    new_socket =
+      case socket.assigns.player_id == player_id do
+        true ->
+          viewed_spaces =
+            socket.assigns.viewed_spaces
+            |> Enum.concat(viewing_spaces)
+            |> Enum.uniq()
+          viewed_letters =
+            socket.assigns.viewed_letters
+            |> Enum.concat(viewing_letters)
+            |> Enum.uniq()
+          assign(socket, players: new_players, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters)
+        false ->
+          assign(socket, :players, new_players)
+      end
+
+    IO.inspect new_socket.assigns.viewed_letters
+
+
+    # %{
+    #   player_id: player_id,
+    #   location: target,
+    #   viewing_spaces: viewing_spaces,
+    #   viewing_letters: viewing_letters
+    # }
+
+
+    {:noreply, new_socket}
   end
 
   def handle_info(%{event: "server:new_player", payload: %{player: player, player_id: player_id} }, socket) do

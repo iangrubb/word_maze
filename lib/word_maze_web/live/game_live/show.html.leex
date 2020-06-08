@@ -16,6 +16,15 @@
 
       <%# Overlayed screen on game board %>
 
+      <div id="screen-overlay">
+        <div class="overlay-shadow"></div>
+        <div class="overlay-revealed">
+          <%= for address <- @viewed_spaces do %>
+            <div class="revealed-tile" style="<%= reveal_tile(address)%>"></div>
+          <% end %>
+        </div>
+      </div>
+
     </div>
 
   </div>

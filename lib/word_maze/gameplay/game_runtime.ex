@@ -249,8 +249,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
   end
 
 
-
-
   # Movement Logic
 
   def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}} = message, state) do
@@ -271,28 +269,35 @@ defmodule WordMaze.Gameplay.GameRuntime do
       end
 
     case state.spaces[target].open do
-        true ->
-          WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_location", %{player_id: player_id, location: target})
-          player = state.players[player_id]
+      true ->
 
-          viewing_spaces = GameHelpers.visible_spaces(state.spaces, target)
-          viewed_spaces =
-            player.viewed_spaces
-            |> Enum.concat(viewing_spaces)
-            |> Enum.uniq()
+        player = state.players[player_id]
 
-          viewing_letters = Enum.filter(viewing_spaces, fn address -> state.spaces[address].letter !== nil end)
-          viewed_letters =
-            player.viewed_letters
-            |> Enum.concat(viewing_letters)
-            |> Enum.uniq()
+        viewing_spaces = GameHelpers.visible_spaces(state.spaces, target)
+        viewed_spaces =
+          player.viewed_spaces
+          |> Enum.concat(viewing_spaces)
+          |> Enum.uniq()
 
+        viewing_letters = Enum.filter(viewing_spaces, fn address -> state.spaces[address].letter !== nil end)
+        viewed_letters =
+          player.viewed_letters
+          |> Enum.concat(viewing_letters)
+          |> Enum.uniq()
 
+        WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_location",
+          %{
+            player_id: player_id,
+            location: target,
+            viewing_spaces: viewing_spaces,
+            viewing_letters: viewing_letters
+          }
+        )
 
-          new_player = %{ player | location: target, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters }
-          IO.inspect new_player
-          %{state | players: Map.put(state.players, player_id, new_player)}
-        false -> state
+        new_player = %{ player | location: target, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters }
+
+        %{state | players: Map.put(state.players, player_id, new_player)}
+      false -> state
     end
   end
 
