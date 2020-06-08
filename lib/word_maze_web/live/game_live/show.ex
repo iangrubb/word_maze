@@ -55,54 +55,70 @@ defmodule WordMazeWeb.GameLive.Show do
   "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
  end
 
- def place_player(player) do
+  def place_player(player, user_controlled) do
   {x, y} = player.location
   location = "calc( #{x} * 200% + 50% ), calc( #{y} * 200% + 50% )"
-  "background: #{player.color}; transform: translate(#{location});"
- end
+  "background: #{player.color}; transform: translate(#{location}); z-index: #{if user_controlled, do: 3, else: 2};"
+  end
 
- def reveal_tile(address) do
-  {x, y} = address
-  "grid-area: #{y + 1} / #{x + 1} / #{y + 2} / #{x + 2};"
- end
+  def reveal_tile({x, y}) do
+    "grid-area: #{y + 1} / #{x + 1} / #{y + 2} / #{x + 2};"
+  end
+
+  def light_translate({x, y}) do
+    "transform: translate(calc(#{x - 5} / 11 * 100%), calc(#{y - 5}/ 11 * 100%))"
+  end
+
+  def light_path(spaces, location) do
+
+    {up, right, down, left} = GameHelpers.view_distances(spaces, location)
+
+    "clip-path: polygon(
+      calc((5/11) * 100% - 4px)            calc((5/11) * 100% - 4px),
+      calc((5/11) * 100% - 4px)            calc((#{5 - up}/11) * 100% - 4px),
+      calc((6/11) * 100% + 4px)            calc((#{5 - up}/11) * 100% - 4px),
+      calc((6/11) * 100% + 4px)            calc((5/11) * 100% - 4px),
+      calc((#{6 + right}/11) * 100% + 4px) calc( 5 / 11 * 100% - 4px),
+      calc((#{6 + right}/11) * 100% + 4px) calc( 6 / 11 * 100% + 4px),
+      calc((6/11) * 100% + 4px)            calc((6/11) * 100% + 4px),
+      calc((6/11) * 100% + 4px)            calc((#{6 + down}/11) * 100% + 4px),
+      calc((5/11) * 100% - 4px)            calc((#{6 + down}/11) * 100% + 4px),
+      calc((5/11) * 100% - 4px)            calc((6/11) * 100% + 4px),
+      calc((#{5 - left}/11) * 100% - 4px)  calc((6/11) * 100% + 4px),
+      calc((#{5 - left}/11) * 100% - 4px)  calc((5/11) * 100% - 4px))
+    "
+  end
+
+  def view_path_cutout(spaces, {x, y} = location) do
+
+    {up, right, down, left} = GameHelpers.view_distances(spaces, location)
+
+    "clip-path: polygon(
+      calc((#{x}/23) * 100% - 4px)              0,
+      0                                         0,
+      0                                         100%,
+      100%                                      100%,
+      100%                                      0,
+      calc((#{x}/23) * 100% - 4px)              0,
+      calc((#{x}/23) * 100% - 4px)              calc((#{y - up}/23) * 100% - 4px),
+      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y - up}/23) * 100% - 4px),
+      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y}/23) * 100% - 4px),
+      calc((#{x + 1 + right}/23) * 100% + 4px)  calc((#{y}/23) * 100% - 4px),
+      calc((#{x + 1 + right}/23) * 100% + 4px)  calc((#{y + 1}/23) * 100% + 4px),
+      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y + 1}/23) * 100% + 4px),
+      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y + 1 + down}/23) * 100% + 4px),
+      calc((#{x}/23) * 100% - 4px)              calc((#{y + 1 + down}/23) * 100% + 4px),
+      calc((#{x}/23) * 100% - 4px)              calc((#{y + 1}/23) * 100% + 4px),
+      calc((#{x - left}/23) * 100% - 4px)       calc((#{y + 1}/23) * 100% + 4px),
+      calc((#{x - left}/23) * 100% - 4px)       calc((#{y}/23) * 100% - 4px),
+      calc((#{x}/23) * 100% - 4px)              calc((#{y}/23) * 100% - 4px)
+    )"
+  end
 
 
-
-
-
-
-
-
-
-
-#  def light_path(player_x, player_y, blocks) do
-
-#   {up, right, down, left} = light_dimensions(player_x, player_y, blocks)
-
-#   "clip-path: polygon(
-#     calc((5/11) * 100% - 4px)            calc((5/11) * 100% - 4px),
-#     calc((5/11) * 100% - 4px)            calc((#{5 - up}/11) * 100% - 4px),
-#     calc((6/11) * 100% + 4px)            calc((#{5 - up}/11) * 100% - 4px),
-#     calc((6/11) * 100% + 4px)            calc((5/11) * 100% - 4px),
-#     calc((#{6 + right}/11) * 100% + 4px) calc( 5 / 11 * 100% - 4px),
-#     calc((#{6 + right}/11) * 100% + 4px) calc( 6 / 11 * 100% + 4px),
-#     calc((6/11) * 100% + 4px)            calc((6/11) * 100% + 4px),
-#     calc((6/11) * 100% + 4px)            calc((#{6 + down}/11) * 100% + 4px),
-#     calc((5/11) * 100% - 4px)            calc((#{6 + down}/11) * 100% + 4px),
-#     calc((5/11) * 100% - 4px)            calc((6/11) * 100% + 4px),
-#     calc((#{5 - left}/11) * 100% - 4px)  calc((6/11) * 100% + 4px),
-#     calc((#{5 - left}/11) * 100% - 4px)  calc((5/11) * 100% - 4px))
-#   "
-
-#  end
-
-#  def light_translate(player_x, player_y) do
-
-#   "calc(#{player_x - 5} / 11 * 100%), calc(#{player_y - 5}/ 11 * 100%)"
-
-#  end
-
-
+  # <div class="overlay-light" style="transform: translate(<%= light_translate(@players[@player_id].location) %>);">
+  #   <div clase="overlay-light-contents"></div>
+  # </div>
 
 
 
@@ -173,18 +189,6 @@ defmodule WordMazeWeb.GameLive.Show do
         false ->
           assign(socket, :players, new_players)
       end
-
-    IO.inspect new_socket.assigns.viewed_letters
-
-
-    # %{
-    #   player_id: player_id,
-    #   location: target,
-    #   viewing_spaces: viewing_spaces,
-    #   viewing_letters: viewing_letters
-    # }
-
-
     {:noreply, new_socket}
   end
 
@@ -192,12 +196,6 @@ defmodule WordMazeWeb.GameLive.Show do
     players = Map.put(socket.assigns.players, player_id, player)
     {:noreply, assign(socket, :players, players)}
   end
-
-
-
-
-
-
 
 
 

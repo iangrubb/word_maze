@@ -155,53 +155,43 @@ body{
 
 
 
+
+
 #screen-overlay {
   position: absolute;
-  z-index: 3;
-
   width: 100%;
   height: 100%;
+  z-index: 4;
+  background: rgb(20, 20, 20);
 
-  mix-blend-mode: multiply;
-
-}
-
-.overlay-shadow {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgb(0, 0, 0);
-  
-}
-
-
-
-.overlay-revealed {
-  position: absolute;
-  top: 0;
-  left: 0;
-  
   width: 100%;
   height: 100%;
 
   display: grid;
   grid-template-columns: repeat(23, calc(1/23 * 100%));
   grid-template-rows: repeat(23, calc(1/23 * 100%));
+
+  transition: clip-path 0.05s ease;
+  
+}
+
+.revealed-space {
+  background: rgb(34, 32, 32); 
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  padding: 4px;
+
+  position: relative;
+  top: -2px;
+  left: -2px;
 }
 
 .revealed-tile {
-
-  background: rgb(87, 81, 72);
-
-  width: calc(100% + 8px);
-  height: calc(100% + 8px);
-
-  position: relative;
-  top: -4px;
-  left: -4px;
-
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: rgb(61, 57, 57);
 }
-
 
 
 
@@ -209,11 +199,14 @@ body{
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 4;
   
   width: calc(11/23 * 100%);
   height: calc(11/23 * 100%);
 
   transition: all 0.1s linear;
+
+  mix-blend-mode: exclusion;
 }
 
 .overlay-light-contents {
@@ -240,16 +233,13 @@ body{
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 2;
   
   height: calc(1/46 * 100%);
   width: calc(1/46 * 100%);
   border-radius: 50%;
-
-  transition: transform 0.2s ease;
   
+  transition: transform 0.2s ease;
 }
-
 
 
 .hand-letter {

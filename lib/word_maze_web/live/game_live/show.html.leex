@@ -10,20 +10,20 @@
         <div class="<%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;"></div>
       <% end %>
 
-      <%= for {_player_id, player} <- @players do %>
-        <div class="character" style="<%= place_player(player)%>"></div>
+
+      <%= for { player_id, player } <- @players do %>
+        <div class="character" style="<%= place_player(player, @player_id == player_id) %>"></div>
       <% end %>
 
-      <%# Overlayed screen on game board %>
 
-      <div id="screen-overlay">
-        <div class="overlay-shadow"></div>
-        <div class="overlay-revealed">
-          <%= for address <- @viewed_spaces do %>
-            <div class="revealed-tile" style="<%= reveal_tile(address)%>"></div>
-          <% end %>
-        </div>
+      <div id="screen-overlay" style="<%= view_path_cutout(@spaces, @players[@player_id].location)%>" >
+        <%= for address <- @viewed_spaces do %>
+          <div class="revealed-space" style="<%= reveal_tile(address) %>">
+            <div class="revealed-tile"></div>
+          </div>
+        <% end %>
       </div>
+
 
     </div>
 
