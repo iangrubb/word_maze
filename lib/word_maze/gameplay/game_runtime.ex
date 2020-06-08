@@ -8,6 +8,8 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   # Runtime API
 
+  ## Game Setup Utilities
+
   def attempt_player_join(pid, player_id) do
     GenServer.call(pid, {:attempt_player_join, player_id})
   end
@@ -22,7 +24,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def init(game_id) do
     WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
     IO.puts "Starting #{game_id}"
-    {:ok, initialize_game_state()}
+    {:ok, initialize_game_state(game_id)}
   end
 
   def handle_call(:get_pid, _from, state) do
@@ -35,19 +37,17 @@ defmodule WordMaze.Gameplay.GameRuntime do
           # Old player is rejoining
           player_state = extract_state_for_player(state, player_id)
           IO.puts "OLD RETURNS"
-          IO.inspect player_state
           {:reply, player_state, state}
         Enum.count(state.players) < 4 ->
           # New player has space to be added
           new_state = initialize_player_state(state, player_id)
           player_state = extract_state_for_player(new_state, player_id)
           IO.puts "NEW JOINS"
-          IO.inspect player_state
+          # IO.inspect player_state
           {:reply, player_state, new_state}
         true ->
           # New player has no space and can't join
           IO.puts "New Denied"
-          IO.inspect state.players
           {:reply, :full, state}
       end
   end
@@ -60,9 +60,10 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   # Game initialization on start
 
-  def initialize_game_state() do
+  def initialize_game_state(game_id) do
 
     defaults = %{
+      game_id: game_id,
       players: %{},
     }
 
@@ -224,7 +225,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
     Map.put(player_state, :hand, [])
   end
 
-  def set_initial_view(player_state, locations) do
+  def set_initial_view(player_state, spaces) do
 
     # Finish this by calculating views
 
@@ -236,6 +237,87 @@ defmodule WordMaze.Gameplay.GameRuntime do
     |> Map.put(:viewed_letters, viewed_letters)
 
   end
+
+
+
+
+
+  def handle_info(%{event: "server:" <> _message }, state) do
+    {:noreply, state}
+  end
+
+
+
+
+  # Movement Logic
+
+  # WordMazeWeb.Endpoint.broadcast("game:#{socket.assigns.game_id}", "client:move",  %{player_id: socket.assigns.player_id, direction: key})
+
+  # %{event: "client:move", payload: %{player_id: player_id, direction: direction}}
+
+  def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}} = message, state) do
+    updated_state = attempt_move(state, player_id, direction)
+    {:noreply, updated_state}
+  end
+
+
+
+  defp attempt_move(state, player_id, direction) do
+
+    {x, y} = state.players[player_id].location
+
+    # FIX THIS NEXT
+
+
+    target =
+      case direction do
+        "ArrowLeft" -> {x - 1, y}
+        "ArrowDown" -> {x, y + 1}
+        "ArrowUp" -> {x, y - 1}
+        "ArrowRight" -> {x + 1, y}
+      end
+
+    case state.spaces[target].open do
+        true ->
+          WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_location", %{player_id: player_id, location: target})
+          player = state.players[player_id]
+          new_player = %{ player | location: target }
+          %{state | players: Map.put(state.players, player_id, new_player)}
+        false -> state
+    end
+
+  end
+
+
+
+  # def add_revealed_blocks(socket) do
+  #   %{blocks: blocks, revealed_blocks: revealed_blocks} = socket.assigns
+
+  #   player_x = 1
+  #   player_y = 1
+
+  #   {up, right, down, left} = light_dimensions(player_x, player_y, blocks)
+
+  #   vertical_blocks = for n <- (player_y - up)..(player_y + down), do: {player_x, n}
+  #   horizontal_blocks = for n <- (player_x - left)..(player_x + right), do: {n, player_y}
+
+  #   new_revealed_blocks =
+  #     revealed_blocks
+  #     |> Enum.concat(vertical_blocks)
+  #     |> Enum.concat(horizontal_blocks)
+  #     |> Enum.uniq()
+
+  #   assign(socket, :revealed_blocks, new_revealed_blocks)
+  # end
+
+
+
+
+
+
+
+
+
 
 
 

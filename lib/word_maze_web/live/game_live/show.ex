@@ -18,10 +18,11 @@ defmodule WordMazeWeb.GameLive.Show do
         game_state ->
           local_defaults =
             %{
+              game_id: game_id,
+              player_id: player_id,
               connected: true,
               typing: "",
-              discarding: false,
-              player_id: player_id
+              discarding: false
             }
           new_socket =
             socket
@@ -160,26 +161,13 @@ defmodule WordMazeWeb.GameLive.Show do
 
 
 
-
-
-
-
   # Event handlers
 
   @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight"]
 
   def handle_event("keydown", %{"key" => key}, socket) when key in @arrows do
-
-    # Move the player on the game server, but also calls light_dimensions to add to a map of seen tiles.
-
-    new_socket =
-      socket
-      |> move(key, socket.assigns.player_x, socket.assigns.player_y)
-      |> add_revealed_blocks()
-      |> assign(:player_x, 1)
-      |> assign(:player_y, 1)
-
-    {:noreply, new_socket}
+    WordMazeWeb.Endpoint.broadcast("game:#{socket.assigns.game_id}", "client:move",  %{player_id: socket.assigns.player_id, direction: key})
+    {:noreply, socket}
   end
 
   def handle_event("keydown", %{"key" => key}, socket) do
@@ -187,24 +175,22 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
 
-  def add_revealed_blocks(socket) do
-    %{blocks: blocks, revealed_blocks: revealed_blocks} = socket.assigns
 
-    player_x = 1
-    player_y = 1
 
-    {up, right, down, left} = light_dimensions(player_x, player_y, blocks)
+  # Message Handlers
 
-    vertical_blocks = for n <- (player_y - up)..(player_y + down), do: {player_x, n}
-    horizontal_blocks = for n <- (player_x - left)..(player_x + right), do: {n, player_y}
+  def handle_info(%{event: "client:" <> _message }, socket) do
+    #Ignore any messages from clients
+    {:noreply, socket}
+  end
 
-    new_revealed_blocks =
-      revealed_blocks
-      |> Enum.concat(vertical_blocks)
-      |> Enum.concat(horizontal_blocks)
-      |> Enum.uniq()
-
-    assign(socket, :revealed_blocks, new_revealed_blocks)
+  def handle_info(%{event: "server:new_location", payload: %{player_id: player_id, location: location}} , socket) do
+    IO.inspect(socket.assigns.players)
+    IO.puts(player_id)
+    player = socket.assigns.players[player_id]
+    new_player = %{ player | location: location}
+    new_players = Map.put(socket.assigns.players, player_id, new_player)
+    {:noreply, assign(socket, :players, new_players )}
   end
 
 
@@ -212,37 +198,6 @@ defmodule WordMazeWeb.GameLive.Show do
 
 
 
-  # Game logic, eventually should get moved to separate gen process
-
-  defp move(socket, "ArrowLeft", x, y) do
-    case socket.assigns.blocks[{x - 1, y}].passable do
-        true -> assign(socket, :player_x, x - 1)
-        false -> socket
-    end
-  end
-
-  defp move(socket, "ArrowDown", x, y) do
-    case socket.assigns.blocks[{x, y + 1}].passable do
-      true -> assign(socket, :player_y, y + 1)
-      false -> socket
-    end
-  end
-
-  defp move(socket, "ArrowUp", x, y) do
-    case socket.assigns.blocks[{x, y - 1}].passable do
-      true -> assign(socket, :player_y, y - 1)
-      false -> socket
-    end
-  end
-
-  defp move(socket, "ArrowRight", x, y) do
-    case socket.assigns.blocks[{x + 1, y}].passable do
-      true -> assign(socket, :player_x, x + 1)
-      false -> socket
-    end
-  end
-
-  defp move(socket, _, x, y), do: socket
 
 
 
