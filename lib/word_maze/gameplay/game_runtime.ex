@@ -88,6 +88,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
     }
   end
 
+
   @board [
     ~w(╔ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ╗),
     ~w(║ . . . . █ . . . . . █ . . . . . █ . . . . ║),
@@ -184,6 +185,8 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   def initialize_player_state(state, player_id) do
 
+    generate_letter()
+
     defaults = %{
       score: 0,
     }
@@ -224,7 +227,10 @@ defmodule WordMaze.Gameplay.GameRuntime do
   end
 
   def set_initial_hand(player_state) do
-    Map.put(player_state, :hand, [])
+    hand =
+      [1, 2, 3, 4, 5, 6]
+      |> Enum.map(fn _n -> generate_letter() end )
+    Map.put(player_state, :hand, hand)
   end
 
   def set_initial_view(player_state, spaces) do
@@ -239,6 +245,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
     |> Map.put(:viewed_letters, viewed_letters)
 
   end
+
 
 
 
@@ -299,6 +306,78 @@ defmodule WordMaze.Gameplay.GameRuntime do
         %{state | players: Map.put(state.players, player_id, new_player)}
       false -> state
     end
+  end
+
+
+  # Hand Logic
+
+  def current_letters(spaces, players) do
+
+    hand_letters = Enum.flat_map(players, fn player -> player.hand end)
+    board_letters =
+      spaces
+      |> Enum.filter(fn space -> space.letter != nil end)
+      |> Enum.map(fn space -> space.letter end)
+
+    Enum.concat(hand_letters, board_letters)
+    |> Enum.reduce(%{}, fn (letter, acc) ->
+        case Map.has_key?(acc, letter) do
+          true -> Map.put(acc, letter, acc[letter] + 1)
+          false -> Map.put(acc, letter, 1)
+        end
+      end)
+  end
+
+  def generate_letter() do
+
+    total =
+      letter_frequencies()
+      |> Enum.reduce(0, fn ({_letter, count}, acc) -> acc + count end)
+
+    value = :rand.uniform(total)
+
+    {_acc, letter} =
+      letter_frequencies()
+      |> Enum.reduce( {0, nil} , fn ({letter, count}, {acc, target}) ->
+        cond do
+          target != nil         -> {acc, target}
+          acc + count >= value  -> {acc, letter}
+          true                  -> {acc + count, nil}
+        end
+      end)
+
+    letter
+  end
+
+  def letter_frequencies() do
+    %{
+      "a" => 9,
+      "b" => 2,
+      "c" => 2,
+      "d" => 4,
+      "e" => 12,
+      "f" => 2,
+      "g" => 3,
+      "h" => 2,
+      "i" => 9,
+      "j" => 1,
+      "k" => 1,
+      "l" => 4,
+      "m" => 2,
+      "n" => 6,
+      "o" => 8,
+      "p" => 2,
+      "q" => 1,
+      "r" => 6,
+      "s" => 4,
+      "t" => 6,
+      "u" => 4,
+      "v" => 2,
+      "w" => 2,
+      "x" => 1,
+      "y" => 2,
+      "z" => 1,
+    }
   end
 
 

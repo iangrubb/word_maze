@@ -28,6 +28,9 @@ defmodule WordMazeWeb.GameLive.Show do
             socket
             |> assign(game_state)
             |> assign(local_defaults)
+
+          IO.inspect(game_state)
+
           {:ok, new_socket}
       end
     else

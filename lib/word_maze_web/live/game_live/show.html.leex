@@ -5,16 +5,13 @@
 
     <div id="game-board" style="<%= screen_scroll( @players[@player_id].location ) %>">
 
-      <%# Base tiles for game board %>
       <%= for { _ , %{x: x, y: y, class: class} } <- @spaces do %>
         <div class="<%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;"></div>
       <% end %>
 
-
       <%= for { player_id, player } <- @players do %>
         <div class="character" style="<%= place_player(player, @player_id == player_id) %>" id="<%= player_id %>"></div>
       <% end %>
-
 
       <div class="overlay-light" style="<%= light_translate(@players[@player_id].location) %>"></div>
 
@@ -25,7 +22,6 @@
           </div>
         <% end %>
       </div>
-
 
     </div>
 
