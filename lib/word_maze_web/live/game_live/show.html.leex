@@ -28,8 +28,8 @@
   </div>
 
   <div id="game-letters">
-    <%= for x <- 0..6 do %>
-      <div class="hand-letter"></div>
+    <%= for letter <- @hand do %>
+      <div class="letter hand-letter"><%= letter %><span><span><%= display_letter_score(letter) %></span></span></div>
     <% end %>
   </div>
 

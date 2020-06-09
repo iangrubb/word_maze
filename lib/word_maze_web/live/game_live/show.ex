@@ -28,9 +28,6 @@ defmodule WordMazeWeb.GameLive.Show do
             socket
             |> assign(game_state)
             |> assign(local_defaults)
-
-          IO.inspect(game_state)
-
           {:ok, new_socket}
       end
     else
@@ -98,25 +95,9 @@ defmodule WordMazeWeb.GameLive.Show do
     )"
   end
 
-
-
-
-
-
-
-#  <div id="screen-overlay">
-#         <div class="overlay-shadow"></div>
-#         <div class="overlay-revealed">
-#           <%= for {x, y} <- @viewed_spaces do %>
-#             <div class="revealed-tile" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;"></div>
-#           <% end %>
-#         </div>
-#         <div class="overlay-light" style="transform: translate(<%= light_translate(  1   , 1) %>);">
-#           <div class="overlay-light-contents" style="<%= light_path(   1   , 1, @spaces) %>" >
-#           </div>
-#         </div>
-#       </div>
-
+  def display_letter_score(letter) do
+    GameHelpers.letter_scores()[letter]
+  end
 
 
 

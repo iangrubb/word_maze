@@ -91,7 +91,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   @board [
     ~w(╔ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ╗),
-    ~w(║ . . . . █ . . . . . █ . . . . . █ . . . . ║),
+    ~w(║ s . . . █ . . . . . █ . . . . . █ . . . s ║),
     ~w(║ . █ █ . . . █ █ █ . █ . █ █ █ . . . █ █ . ║),
     ~w(║ . . . . █ . █ █ . . . . . █ █ . █ . . . . ║),
     ~w(║ █ █ . █ █ . . . . █ . █ . . . . █ █ . █ █ ║),
@@ -111,7 +111,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
     ~w(║ █ █ . █ █ . . . . █ . █ . . . . █ █ . █ █ ║),
     ~w(║ . . . . █ . █ █ . . . . . █ █ . █ . . . . ║),
     ~w(║ . █ █ . . . █ █ █ . █ . █ █ █ . . . █ █ . ║),
-    ~w(║ . . . . █ . . . . . █ . . . . . █ . . . . ║),
+    ~w(║ s . . . █ . . . . . █ . . . . . █ . . . s ║),
     ~w(╚ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ╝)
   ]
 
@@ -139,6 +139,8 @@ defmodule WordMaze.Gameplay.GameRuntime do
               {x_idx + 1, Map.put(acc, {x_idx, y_idx}, wall(x_idx, y_idx))}
             ".", {x_idx, acc} ->
               {x_idx + 1, Map.put(acc, {x_idx, y_idx}, path(x_idx, y_idx))}
+            letter, {x_idx, acc} ->
+              {x_idx + 1, Map.put(acc, {x_idx, y_idx}, letter_path(x_idx, y_idx, letter))}
           end)
         {y_idx + 1, row_spaces}
       end)
@@ -172,6 +174,10 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   defp path(x, y) do
     %{open: true, letter: nil, x: x, y: y, class: "path"}
+  end
+
+  defp letter_path(x, y, letter) do
+    %{open: true, letter: letter, x: x, y: y, class: "path"}
   end
 
   defp wall(x, y) do
@@ -331,13 +337,13 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def generate_letter() do
 
     total =
-      letter_frequencies()
+      GameHelpers.letter_frequencies()
       |> Enum.reduce(0, fn ({_letter, count}, acc) -> acc + count end)
 
     value = :rand.uniform(total)
 
     {_acc, letter} =
-      letter_frequencies()
+      GameHelpers.letter_frequencies()
       |> Enum.reduce( {0, nil} , fn ({letter, count}, {acc, target}) ->
         cond do
           target != nil         -> {acc, target}
@@ -349,36 +355,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
     letter
   end
 
-  def letter_frequencies() do
-    %{
-      "a" => 9,
-      "b" => 2,
-      "c" => 2,
-      "d" => 4,
-      "e" => 12,
-      "f" => 2,
-      "g" => 3,
-      "h" => 2,
-      "i" => 9,
-      "j" => 1,
-      "k" => 1,
-      "l" => 4,
-      "m" => 2,
-      "n" => 6,
-      "o" => 8,
-      "p" => 2,
-      "q" => 1,
-      "r" => 6,
-      "s" => 4,
-      "t" => 6,
-      "u" => 4,
-      "v" => 2,
-      "w" => 2,
-      "x" => 1,
-      "y" => 2,
-      "z" => 1,
-    }
-  end
 
 
 
