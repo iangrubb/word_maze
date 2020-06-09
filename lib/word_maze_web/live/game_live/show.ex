@@ -58,7 +58,10 @@ defmodule WordMazeWeb.GameLive.Show do
   def place_player(player, user_controlled) do
   {x, y} = player.location
   location = "calc( #{x} * 200% + 50% ), calc( #{y} * 200% + 50% )"
-  "background: #{player.color}; transform: translate(#{location}); z-index: #{if user_controlled, do: 3, else: 2};"
+  "border: 2px solid #{player.color};
+   transform: translate(#{location}) scale(1.5);
+   z-index: #{if user_controlled, do: 3, else: 2};
+  "
   end
 
   def reveal_tile({x, y}) do
