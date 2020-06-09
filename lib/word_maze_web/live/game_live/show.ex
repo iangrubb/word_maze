@@ -69,26 +69,6 @@ defmodule WordMazeWeb.GameLive.Show do
     "transform: translate(calc(#{x - 5} / 11 * 100%), calc(#{y - 5}/ 11 * 100%))"
   end
 
-  def light_path(spaces, location) do
-
-    {up, right, down, left} = GameHelpers.view_distances(spaces, location)
-
-    "clip-path: polygon(
-      calc((5/11) * 100% - 4px)            calc((5/11) * 100% - 4px),
-      calc((5/11) * 100% - 4px)            calc((#{5 - up}/11) * 100% - 4px),
-      calc((6/11) * 100% + 4px)            calc((#{5 - up}/11) * 100% - 4px),
-      calc((6/11) * 100% + 4px)            calc((5/11) * 100% - 4px),
-      calc((#{6 + right}/11) * 100% + 4px) calc( 5 / 11 * 100% - 4px),
-      calc((#{6 + right}/11) * 100% + 4px) calc( 6 / 11 * 100% + 4px),
-      calc((6/11) * 100% + 4px)            calc((6/11) * 100% + 4px),
-      calc((6/11) * 100% + 4px)            calc((#{6 + down}/11) * 100% + 4px),
-      calc((5/11) * 100% - 4px)            calc((#{6 + down}/11) * 100% + 4px),
-      calc((5/11) * 100% - 4px)            calc((6/11) * 100% + 4px),
-      calc((#{5 - left}/11) * 100% - 4px)  calc((6/11) * 100% + 4px),
-      calc((#{5 - left}/11) * 100% - 4px)  calc((5/11) * 100% - 4px))
-    "
-  end
-
   def view_path_cutout(spaces, {x, y} = location) do
 
     {up, right, down, left} = GameHelpers.view_distances(spaces, location)
@@ -116,9 +96,7 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
 
-  # <div class="overlay-light" style="transform: translate(<%= light_translate(@players[@player_id].location) %>);">
-  #   <div clase="overlay-light-contents"></div>
-  # </div>
+
 
 
 

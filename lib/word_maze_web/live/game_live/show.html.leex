@@ -16,6 +16,8 @@
       <% end %>
 
 
+      <div class="overlay-light" style="<%= light_translate(@players[@player_id].location) %>"></div>
+
       <div id="screen-overlay" style="<%= view_path_cutout(@spaces, @players[@player_id].location)%>" >
         <%= for address <- @viewed_spaces do %>
           <div class="revealed-space" style="<%= reveal_tile(address) %>">
