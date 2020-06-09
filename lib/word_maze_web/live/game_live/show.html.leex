@@ -12,7 +12,7 @@
 
 
       <%= for { player_id, player } <- @players do %>
-        <div class="character" style="<%= place_player(player, @player_id == player_id) %>"></div>
+        <div class="character" style="<%= place_player(player, @player_id == player_id) %>" id="<%= player_id %>"></div>
       <% end %>
 
 
