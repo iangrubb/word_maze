@@ -22,7 +22,7 @@ defmodule WordMazeWeb.GameLive.Show do
               player_id: player_id,
               connected: true,
               typing: false,
-              word_input: [],
+              word_input: nil,
               discarding: false
             }
           new_socket =
@@ -115,6 +115,33 @@ defmodule WordMazeWeb.GameLive.Show do
     "#{if typing, do: "Stop", else: "Start"} Typing"
   end
 
+  def input_region_style(typing, input, {x, y}) do
+
+    case typing do
+      true ->
+        {{start_x, start_y}, axis, letters} = input
+
+        {end_x, end_y} =
+          case axis do
+            :horizontal -> {start_x + Enum.count(letters), start_y}
+            :vertical   -> {start_x , start_y + Enum.count(letters)}
+          end
+
+        "
+         grid-area: #{start_y + 1}/#{start_x + 1}/#{end_y + 1}/#{end_x + 1};
+         border: 2px solid white;
+        "
+      false ->
+        "
+         grid-area: #{y + 1}/#{x + 1}/#{y + 2}/#{x + 2};
+         border: 2px solid transparent;
+        "
+    end
+
+  end
+
+
+
 
   # Funcitons for movement
 
@@ -124,7 +151,7 @@ defmodule WordMazeWeb.GameLive.Show do
       %{
         discarding: false,
         typing: false,
-        word_input: []
+        word_input: nil
       }
     assign(socket, resets)
   end
@@ -133,8 +160,64 @@ defmodule WordMazeWeb.GameLive.Show do
 
   # Functions for word input
 
+  def toggle_typing(socket) do
+    %{typing: typing, spaces: spaces, players: players, player_id: player_id} = socket.assigns
+    case typing do
+      true -> assign(socket, %{typing: false, word_input: nil})
+      false ->
+        visible = GameHelpers.visible_spaces(spaces, players[player_id].location)
+        case Enum.all?(visible, fn address -> spaces[address].letter != nil end) do
+          true  ->
+            socket
+          false ->
+            data = initialize_typing_data(players, player_id, spaces)
+            assign(socket, %{typing: true, word_input: data})
+        end
+    end
+  end
 
+  def initialize_typing_data(players, player_id, spaces) do
 
+    {player_x, player_y} = player_location = players[player_id].location
+    visible = GameHelpers.visible_spaces(spaces, player_location)
+
+    horizontal =
+      visible
+      |> Enum.filter(fn address -> spaces[address].letter == nil end)
+      |> Enum.all?(fn {_x, y} -> y == player_y end)
+
+    start =
+      case horizontal do
+        true -> Enum.min_by(visible, fn {x, _y} -> x end)
+        false -> Enum.min_by(visible, fn {_x, y} -> y end)
+      end
+
+    letters =
+      case horizontal do
+        true ->
+          visible
+          |> Enum.filter(fn {_x, y} -> y == player_y end)
+          |> Enum.map(fn address ->
+            case spaces[address].letter do
+              nil -> nil
+              letter -> String.upcase(letter)
+            end
+          end)
+        false ->
+          visible
+          |> Enum.filter(fn {x, _y} -> x == player_x end)
+          |> Enum.map(fn address ->
+            case spaces[address].letter do
+              nil -> nil
+              letter -> String.upcase(letter)
+            end
+          end)
+      end
+
+    axis = if horizontal, do: :horizontal, else: :vertical
+
+    {start, axis, letters}
+  end
 
 
   # Event handlers
@@ -151,8 +234,8 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
   def handle_event("toggle-typing", _value, socket) do
-    %{typing: typing} = socket.assigns
-    {:noreply, assign(socket, %{typing: not typing, word_input: []})}
+    new_socket = toggle_typing(socket)
+    {:noreply, new_socket}
   end
 
 

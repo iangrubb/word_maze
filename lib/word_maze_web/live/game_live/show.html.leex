@@ -23,18 +23,23 @@
       <%# Light surrounding playable character %>
       <div class="overlay-light" style="<%= light_translate(@players[@player_id].location) %>"></div>
 
-      <%# Outline of sentence entering region %>
+      <%# Outline for sentence entering region %>
+
+      <div class="input-region" style="<%= input_region_style(@typing, @word_input, @players[@player_id].location) %>"></div>
+
+      <%# Outline for cursor %>
+
 
       <%# Out of view overlay %>
       <div id="screen-overlay" style="<%= view_path_cutout(@spaces, @players[@player_id].location)%>" >
         <%= for address <- @viewed_spaces do %>
           <div class="revealed-space" style="<%= reveal_tile(address) %>">
 
-              <%= if  @spaces[address].letter != nil do %>
-                <div class="letter viewed-letter"><%= @spaces[address].letter %><span><span><%= display_letter_score(@spaces[address].letter) %></span></span></div>
-              <% else %>
-                <div class="revealed-tile"> </div>
-              <% end %>
+            <%= if  @spaces[address].letter != nil do %>
+              <div class="letter viewed-letter"><%= @spaces[address].letter %><span><span><%= display_letter_score(@spaces[address].letter) %></span></span></div>
+            <% else %>
+              <div class="revealed-tile"> </div>
+            <% end %>
 
           </div>
         <% end %>
