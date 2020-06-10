@@ -25,10 +25,11 @@
 
       <%# Outline for sentence entering region %>
 
-      <div class="input-region" style="<%= input_region_style(@typing, @word_input, @players[@player_id].location) %>"></div>
+      <div style="<%= input_region_style(@typing, @word_input, @players[@player_id].location) %>"></div>
 
       <%# Outline for cursor %>
 
+      <div style="<%= input_cursor_style(@typing, @word_input) %>"></div>
 
       <%# Out of view overlay %>
       <div id="screen-overlay" style="<%= view_path_cutout(@spaces, @players[@player_id].location)%>" >

@@ -130,6 +130,7 @@ defmodule WordMazeWeb.GameLive.Show do
         "
          grid-area: #{start_y + 1}/#{start_x + 1}/#{end_y + 1}/#{end_x + 1};
          border: 2px solid white;
+         border-radius: 8px;
         "
       false ->
         "
@@ -137,7 +138,19 @@ defmodule WordMazeWeb.GameLive.Show do
          border: 2px solid transparent;
         "
     end
+  end
 
+  def input_cursor_style(typing, word_input) do
+    case typing do
+      true ->
+        {x, y} = input_address(word_input)
+        "
+          grid-area: #{y + 1}/#{x + 1}/#{y + 2}/#{x + 2};
+          border: 4px dashed white;
+          border-radius: 8px;
+        "
+      false -> "display: none"
+    end
   end
 
 
@@ -217,6 +230,15 @@ defmodule WordMazeWeb.GameLive.Show do
     axis = if horizontal, do: :horizontal, else: :vertical
 
     {start, axis, letters}
+  end
+
+  def input_address(word_input) do
+    {{x, y}, axis , letters} = word_input
+    index = Enum.find_index(letters, fn letter -> letter == nil end)
+    case axis do
+      :horizontal -> {x + index, y}
+      :vertical -> {x, y + index}
+    end
   end
 
 
