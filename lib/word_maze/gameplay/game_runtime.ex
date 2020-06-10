@@ -91,7 +91,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   @board [
     ~w(╔ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ╗),
-    ~w(║ s . . . █ . . . . . █ . . . . . █ . . . s ║),
+    ~w(║ t i l e █ . . . . . █ . . . . . █ t i l e ║),
     ~w(║ . █ █ . . . █ █ █ . █ . █ █ █ . . . █ █ . ║),
     ~w(║ . . . . █ . █ █ . . . . . █ █ . █ . . . . ║),
     ~w(║ █ █ . █ █ . . . . █ . █ . . . . █ █ . █ █ ║),
@@ -111,7 +111,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
     ~w(║ █ █ . █ █ . . . . █ . █ . . . . █ █ . █ █ ║),
     ~w(║ . . . . █ . █ █ . . . . . █ █ . █ . . . . ║),
     ~w(║ . █ █ . . . █ █ █ . █ . █ █ █ . . . █ █ . ║),
-    ~w(║ s . . . █ . . . . . █ . . . . . █ . . . s ║),
+    ~w(║ t i l e █ . . . . . █ . . . . . █ t i l e ║),
     ~w(╚ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ╝)
   ]
 
@@ -281,7 +281,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
         "ArrowRight" -> {x + 1, y}
       end
 
-    case state.spaces[target].open do
+    case state.spaces[target].open and state.spaces[target].letter != nil do
       true ->
 
         player = state.players[player_id]

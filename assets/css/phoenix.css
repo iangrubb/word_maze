@@ -152,6 +152,9 @@ body{
   background: rgb(20, 20, 27);
 }
 
+.board-space {
+  transition: border 0.2s ease;
+}
 
 
 
@@ -208,10 +211,6 @@ body{
 
   transition: all 0.1s linear;
 }
-
-
-
-
 
 
 

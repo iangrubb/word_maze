@@ -21,7 +21,8 @@ defmodule WordMazeWeb.GameLive.Show do
               game_id: game_id,
               player_id: player_id,
               connected: true,
-              typing: "",
+              typing: false,
+              word_input: [],
               discarding: false
             }
           new_socket =
@@ -36,24 +37,25 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
 
+
  # Functions for computing view properties
 
- def screen_scroll(location) do
-  {x, y} = location
-  x_translate =
-    cond do
-      x < 6 -> 0
-      x > 17 -> 12
-      true -> x - 5
-    end
-  y_translate =
-    cond do
-      y < 6 -> 0
-      y > 17 -> 12
-      true -> y - 5
-    end
-  "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
- end
+  def screen_scroll(location) do
+    {x, y} = location
+    x_translate =
+      cond do
+        x < 6 -> 0
+        x > 17 -> 12
+        true -> x - 5
+      end
+    y_translate =
+      cond do
+        y < 6 -> 0
+        y > 17 -> 12
+        true -> y - 5
+      end
+    "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
+  end
 
   def place_player(player, user_controlled) do
   {x, y} = player.location
@@ -102,6 +104,35 @@ defmodule WordMazeWeb.GameLive.Show do
     GameHelpers.letter_scores()[letter]
   end
 
+  def typing_button_style(spaces, location) do
+    case Enum.find(GameHelpers.visible_spaces(spaces, location), fn space -> spaces[space].letter == nil end) do
+      nil -> "background: gray"
+      _   -> "background: white"
+    end
+  end
+
+  def typing_button_text(typing) do
+    "#{if typing, do: "Stop", else: "Start"} Typing"
+  end
+
+
+  # Funcitons for movement
+
+  def move_player(socket, direction) do
+    WordMazeWeb.Endpoint.broadcast("game:#{socket.assigns.game_id}", "client:move",  %{player_id: socket.assigns.player_id, direction: direction})
+    resets =
+      %{
+        discarding: false,
+        typing: false,
+        word_input: []
+      }
+    assign(socket, resets)
+  end
+
+
+
+  # Functions for word input
+
 
 
 
@@ -111,12 +142,17 @@ defmodule WordMazeWeb.GameLive.Show do
   @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight"]
 
   def handle_event("keydown", %{"key" => key}, socket) when key in @arrows do
-    WordMazeWeb.Endpoint.broadcast("game:#{socket.assigns.game_id}", "client:move",  %{player_id: socket.assigns.player_id, direction: key})
-    {:noreply, socket}
+    new_socket = move_player(socket, key)
+    {:noreply, new_socket}
   end
 
   def handle_event("keydown", %{"key" => key}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("toggle-typing", _value, socket) do
+    %{typing: typing} = socket.assigns
+    {:noreply, assign(socket, %{typing: not typing, word_input: []})}
   end
 
 
@@ -133,8 +169,8 @@ defmodule WordMazeWeb.GameLive.Show do
     %{player_id: player_id,
       location: location,
       viewing_spaces: viewing_spaces,
-      viewing_letters: viewing_letters}}, socket) do
-
+      viewing_letters: viewing_letters}}, socket)
+  do
     player = socket.assigns.players[player_id]
     new_player = %{ player | location: location}
     new_players = Map.put(socket.assigns.players, player_id, new_player)

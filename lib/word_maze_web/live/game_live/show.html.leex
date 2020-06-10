@@ -23,6 +23,8 @@
       <%# Light surrounding playable character %>
       <div class="overlay-light" style="<%= light_translate(@players[@player_id].location) %>"></div>
 
+      <%# Outline of sentence entering region %>
+
       <%# Out of view overlay %>
       <div id="screen-overlay" style="<%= view_path_cutout(@spaces, @players[@player_id].location)%>" >
         <%= for address <- @viewed_spaces do %>
@@ -33,7 +35,6 @@
               <% else %>
                 <div class="revealed-tile"> </div>
               <% end %>
-
 
           </div>
         <% end %>
@@ -52,12 +53,10 @@
   <div id="game-controls">
 
 
-    <div class="test0">
 
-      <div class="test1"></div>
-      <div class="test2"></div>
-
-    </div>
+    <button phx-click="toggle-typing" style="<%= typing_button_style(@spaces, @players[@player_id].location) %>">
+      <%= typing_button_text(@typing) %>
+    </button>
 
   </div>
 

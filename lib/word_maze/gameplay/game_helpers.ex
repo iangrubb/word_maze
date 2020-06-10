@@ -7,6 +7,7 @@ defmodule WordMaze.Gameplay.GameHelpers do
 
     {x, y} = location
 
+
     next_location =
       case direction do
         :up -> {x, y - 1}
@@ -38,6 +39,13 @@ defmodule WordMaze.Gameplay.GameHelpers do
 
     Enum.uniq(vertical_spaces ++ horizontal_spaces)
 
+  end
+
+  def location_is_visible?(spaces, location) do
+    case Enum.find(GameHelpers.visible_spaces(spaces, location), fn space -> spaces[space].letter == nil end) do
+      nil -> "background: gray"
+      _   -> "background: white"
+    end
   end
 
   def letter_frequencies() do
