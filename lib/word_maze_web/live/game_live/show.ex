@@ -4,6 +4,10 @@ defmodule WordMazeWeb.GameLive.Show do
   alias WordMaze.Gameplay
   alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor, GameHelpers }
 
+
+  @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+  @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight"]
+
   @impl true
   def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
 
@@ -153,6 +157,48 @@ defmodule WordMazeWeb.GameLive.Show do
     end
   end
 
+  def location_has_provisional_letter(typing, word_input, location) do
+    case typing do
+      true ->
+        case provisional_letter(word_input, location) do
+          nil -> false
+          _letter -> true
+        end
+      false -> false
+    end
+  end
+
+  def provisional_letter(word_input, {target_x, target_y}) do
+
+    {{start_x, start_y}, axis, letters} = word_input
+
+    {diff_x, diff_y} = difference = {target_x - start_x, target_y - start_y}
+
+    index =
+      cond do
+        diff_x != 0 and diff_y != 0 -> nil
+        diff_x < 0 or diff_y < 0    -> nil
+        axis == :horizontal         -> diff_x
+        axis == :vertical           -> diff_y
+      end
+
+    value =
+      case index do
+        nil -> nil
+        _   ->
+          {found, _remainder} = List.pop_at(letters, index)
+          found
+      end
+
+    case Enum.member?(@alphabet, value) do
+      true -> value
+      false -> nil
+    end
+
+  end
+
+
+
 
 
 
@@ -241,14 +287,50 @@ defmodule WordMazeWeb.GameLive.Show do
     end
   end
 
+  def handle_letter_input(letter, word_input, hand) do
+
+    {start, axis, letters} = word_input
+
+    played_letters =
+      letters
+      |> Enum.filter(fn letter -> Enum.member?(@alphabet, letter) end)
+
+    available_letters = hand -- played_letters
+
+    case Enum.member?(available_letters, letter) do
+      true  ->
+        # Come back to handle case of completed word
+
+        # Letters are adding correctly, now render them.
+
+
+        replace_index = Enum.find_index(letters, fn l -> l == nil end)
+        new_letters = List.replace_at(letters, replace_index, letter)
+        {start, axis, new_letters}
+      false -> word_input
+    end
+
+  end
+
+
+
+
 
   # Event handlers
-
-  @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight"]
 
   def handle_event("keydown", %{"key" => key}, socket) when key in @arrows do
     new_socket = move_player(socket, key)
     {:noreply, new_socket}
+  end
+
+  def handle_event("keydown", %{"key" => key}, socket) when key in @alphabet do
+    %{typing: typing, word_input: word_input, hand: hand} = socket.assigns
+    case typing do
+      true ->
+        new_word_input = handle_letter_input(key, word_input, hand)
+        {:noreply, assign(socket, :word_input, new_word_input)}
+      false -> {:noreply, socket}
+    end
   end
 
   def handle_event("keydown", %{"key" => key}, socket) do
@@ -259,6 +341,8 @@ defmodule WordMazeWeb.GameLive.Show do
     new_socket = toggle_typing(socket)
     {:noreply, new_socket}
   end
+
+
 
 
 

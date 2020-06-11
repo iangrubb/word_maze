@@ -9,9 +9,18 @@
       <%# Base Game Spaces + Letters %>
       <%= for { _ , %{x: x, y: y, class: class, letter: letter} } <- @spaces do %>
         <div class="<%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;">
+
           <%= if letter != nil do %>
             <div class="letter board-letter"><%= letter %><span><span><%= display_letter_score(letter) %></span></span></div>
           <% end %>
+
+          <%= if location_has_provisional_letter(@typing, @word_input, {x, y}) do %>
+            <div class="letter board-letter">
+              <%= provisional_letter(@word_input, {x, y}) %>
+              <span><span><%= display_letter_score( provisional_letter(@word_input, {x, y})) %></span></span>
+            </div>
+          <% end %>
+
         </div>
       <% end %>
 
