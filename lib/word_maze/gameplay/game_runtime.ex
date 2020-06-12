@@ -275,13 +275,13 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
     target =
       case direction do
-        "ArrowLeft" -> {x - 1, y}
-        "ArrowDown" -> {x, y + 1}
-        "ArrowUp" -> {x, y - 1}
-        "ArrowRight" -> {x + 1, y}
+        :left   -> {x - 1, y}
+        :down   -> {x, y + 1}
+        :up     -> {x, y - 1}
+        :right  -> {x + 1, y}
       end
 
-    case state.spaces[target].open and state.spaces[target].letter != nil do
+    case state.spaces[target].open do
       true ->
 
         player = state.players[player_id]

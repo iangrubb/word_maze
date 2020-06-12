@@ -6,7 +6,7 @@ defmodule WordMazeWeb.GameLive.Show do
 
 
   @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-  @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight"]
+  @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight", "w", "a", "s", "d"]
 
   @impl true
   def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
@@ -25,9 +25,7 @@ defmodule WordMazeWeb.GameLive.Show do
               game_id: game_id,
               player_id: player_id,
               connected: true,
-              typing: false,
-              word_input: nil,
-              discarding: false
+              hand: Enum.map(game_state.hand, fn letter -> initialize_hand_letter(letter) end)
             }
           new_socket =
             socket
@@ -40,6 +38,10 @@ defmodule WordMazeWeb.GameLive.Show do
     end
   end
 
+  def initialize_hand_letter(letter) do
+    {letter, nil}
+  end
+
 
 
  # Functions for computing view properties
@@ -49,16 +51,16 @@ defmodule WordMazeWeb.GameLive.Show do
     x_translate =
       cond do
         x < 6 -> 0
-        x > 17 -> 12
+        x > 17 -> 13
         true -> x - 5
       end
     y_translate =
       cond do
         y < 6 -> 0
-        y > 17 -> 12
+        y > 17 -> 13
         true -> y - 5
       end
-    "transform: translate(calc(#{x_translate}/11 * -50%), calc(#{y_translate}/11 * -50%))"
+    "transform: translate(calc(#{x_translate}/23 * -100%), calc(#{y_translate}/23 * -100%))"
   end
 
   def place_player(player, user_controlled) do
@@ -119,8 +121,13 @@ defmodule WordMazeWeb.GameLive.Show do
     "#{if typing, do: "Stop", else: "Start"} Typing"
   end
 
-  def input_region_style(typing, input, {x, y}) do
 
+  # <button phx-click="toggle-typing" style="<%= typing_button_style(@spaces, @players[@player_id].location) %>">
+  #     <%= typing_button_text(@typing) %>
+  #   </button>
+
+
+  def input_region_style(typing, input, {x, y}) do
     case typing do
       true ->
         {{start_x, start_y}, axis, letters} = input
@@ -172,6 +179,13 @@ defmodule WordMazeWeb.GameLive.Show do
     end
   end
 
+  # <%= if location_has_provisional_letter(@typing, @word_input, {x, y}) do %>
+  #           <div class="letter board-letter">
+  #             <%= provisional_letter(@word_input, {x, y}) %>
+  #             <span><span><%= display_letter_score( provisional_letter(@word_input, {x, y})) %></span></span>
+  #           </div>
+  #         <% end %>
+
   def provisional_letter(word_input, {target_x, target_y}) do
 
     {{start_x, start_y}, axis, letters} = word_input
@@ -204,11 +218,24 @@ defmodule WordMazeWeb.GameLive.Show do
 
 
 
-
+  ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight", "w", "a", "s", "d"]
 
   # Funcitons for movement
 
-  def move_player(socket, direction) do
+  def move_player(socket, key) do
+
+    direction =
+      case key do
+        "ArrowLeft" -> :left
+        "a"         -> :left
+        "ArrowDown" -> :down
+        "s"         -> :down
+        "ArrowUp"   -> :up
+        "w"         -> :up
+        "ArrowRight"-> :right
+        "d"         -> :right
+      end
+
     WordMazeWeb.Endpoint.broadcast("game:#{socket.assigns.game_id}", "client:move",  %{player_id: socket.assigns.player_id, direction: direction})
     resets =
       %{

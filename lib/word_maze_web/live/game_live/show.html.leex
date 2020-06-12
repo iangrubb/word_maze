@@ -14,13 +14,6 @@
             <div class="letter board-letter"><%= letter %><span><span><%= display_letter_score(letter) %></span></span></div>
           <% end %>
 
-          <%= if location_has_provisional_letter(@typing, @word_input, {x, y}) do %>
-            <div class="letter board-letter">
-              <%= provisional_letter(@word_input, {x, y}) %>
-              <span><span><%= display_letter_score( provisional_letter(@word_input, {x, y})) %></span></span>
-            </div>
-          <% end %>
-
         </div>
       <% end %>
 
@@ -31,14 +24,6 @@
 
       <%# Light surrounding playable character %>
       <div class="overlay-light" style="<%= light_translate(@players[@player_id].location) %>"></div>
-
-      <%# Outline for sentence entering region %>
-
-      <div style="<%= input_region_style(@typing, @word_input, @players[@player_id].location) %>"></div>
-
-      <%# Outline for cursor %>
-
-      <div style="<%= input_cursor_style(@typing, @word_input) %>"></div>
 
       <%# Out of view overlay %>
       <div id="screen-overlay" style="<%= view_path_cutout(@spaces, @players[@player_id].location)%>" >
@@ -60,18 +45,16 @@
   </div>
 
   <div id="game-letters">
-    <%= for letter <- @hand do %>
-      <div class="letter hand-letter"><%= letter %><span><span><%= display_letter_score(letter) %></span></span></div>
+    <%= for {letter, location} <- @hand do %>
+      <%= if location == nil do %>
+        <div class="letter hand-letter"><%= letter %><span><span><%= display_letter_score(letter) %></span></span></div>
+      <% end %>
     <% end %>
   </div>
 
   <div id="game-controls">
 
 
-
-    <button phx-click="toggle-typing" style="<%= typing_button_style(@spaces, @players[@player_id].location) %>">
-      <%= typing_button_text(@typing) %>
-    </button>
 
   </div>
 
