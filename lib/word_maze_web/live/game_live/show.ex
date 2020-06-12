@@ -145,14 +145,18 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
   def input_cursor_style(typing, word_input) do
+
     case typing do
       true ->
-        {x, y} = input_address(word_input)
-        "
-          grid-area: #{y + 1}/#{x + 1}/#{y + 2}/#{x + 2};
-          border: 4px dashed white;
-          border-radius: 8px;
-        "
+        case input_address(word_input) do
+          {x, y} ->
+            "
+              grid-area: #{y + 1}/#{x + 1}/#{y + 2}/#{x + 2};
+              border: 4px dashed white;
+              border-radius: 8px;
+            "
+          _ -> "display: none"
+        end
       false -> "display: none"
     end
   end
@@ -281,9 +285,10 @@ defmodule WordMazeWeb.GameLive.Show do
   def input_address(word_input) do
     {{x, y}, axis , letters} = word_input
     index = Enum.find_index(letters, fn letter -> letter == nil end)
-    case axis do
-      :horizontal -> {x + index, y}
-      :vertical -> {x, y + index}
+    case { axis, index } do
+      { _ , nil }       -> nil
+      {:horizontal, _ } -> {x + index, y}
+      {:vertical, _ }   -> {x, y + index}
     end
   end
 
@@ -299,14 +304,17 @@ defmodule WordMazeWeb.GameLive.Show do
 
     case Enum.member?(available_letters, letter) do
       true  ->
-        # Come back to handle case of completed word
+        case Enum.count(letters, fn l -> l == nil end) do
+          0 ->
+            # Come back to handle case of completed word
 
-        # Letters are adding correctly, now render them.
-
-
-        replace_index = Enum.find_index(letters, fn l -> l == nil end)
-        new_letters = List.replace_at(letters, replace_index, letter)
-        {start, axis, new_letters}
+            word_input
+          _ ->
+            replace_index = Enum.find_index(letters, fn l -> l == nil end)
+            Enum.find_index(letters, fn l -> l == nil end)
+            new_letters = List.replace_at(letters, replace_index, letter)
+            {start, axis, new_letters}
+        end
       false -> word_input
     end
 
