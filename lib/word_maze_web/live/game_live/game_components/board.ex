@@ -2,7 +2,7 @@ defmodule Board do
 
   use Phoenix.LiveComponent
 
-  alias WordMaze.Gameplay.{ GameHelpers }
+  alias WordMaze.Gameplay.{ Letters }
 
   def render(assigns) do
     ~L"""
@@ -46,7 +46,7 @@ defmodule Board do
   end
 
   def display_letter_score(letter) do
-    GameHelpers.letter_scores()[letter]
+    Letters.scores()[letter]
   end
 
   def place_player(player, user_controlled) do

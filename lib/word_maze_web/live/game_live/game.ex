@@ -2,7 +2,7 @@ defmodule WordMazeWeb.GameLive.Game do
   use WordMazeWeb, :live_view
 
   alias WordMaze.Gameplay
-  alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor, GameHelpers }
+  alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor, GameHelpers, Letters }
 
   @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
   @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight", "w", "a", "s", "d"]
@@ -45,7 +45,7 @@ defmodule WordMazeWeb.GameLive.Game do
 
 
   def display_letter_score(letter) do
-    GameHelpers.letter_scores()[letter]
+    Letters.scores()[letter]
   end
 
   def input_region_style(typing, input, {x, y}) do
@@ -300,16 +300,6 @@ defmodule WordMazeWeb.GameLive.Game do
     new_socket = move_player(socket, key)
     {:noreply, new_socket}
   end
-
-  # def handle_event("keydown", %{"key" => key}, socket) when key in @alphabet do
-  #   %{typing: typing, word_input: word_input, hand: hand} = socket.assigns
-  #   case typing do
-  #     true ->
-  #       new_word_input = handle_letter_input(key, word_input, hand)
-  #       {:noreply, assign(socket, :word_input, new_word_input)}
-  #     false -> {:noreply, socket}
-  #   end
-  # end
 
   def handle_event("keydown", %{"key" => key}, socket) do
     {:noreply, socket}

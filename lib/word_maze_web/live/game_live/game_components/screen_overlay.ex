@@ -3,7 +3,7 @@ defmodule ScreenOverlay do
   # the line below would be: use MyAppWeb, :live_component
   use Phoenix.LiveComponent
 
-  alias WordMaze.Gameplay.{ GameHelpers }
+  alias WordMaze.Gameplay.{ GameHelpers, Letters }
 
   def render(assigns) do
     ~L"""
@@ -53,7 +53,7 @@ defmodule ScreenOverlay do
   end
 
   def display_letter_score(letter) do
-    GameHelpers.letter_scores()[letter]
+    Letters.scores()[letter]
   end
 
 end
