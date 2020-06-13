@@ -1,0 +1,20 @@
+
+<%= if @connected do %>
+
+  <div id="game-screen" phx-window-keydown="keydown" phx-throttle="100">
+    <%= live_component @socket, Board, spaces: @spaces, viewed_spaces: @viewed_spaces, players: @players, player_id: @player_id %>
+  </div>
+
+  <div id="game-letters">
+    <%= for {{letter, location}, position} <- Enum.with_index(@hand) do %>
+      <%= if location == nil do %>
+        <div class="letter hand-letter" phx-click="place-letter" phx-value-position="<%= position %>"><%= letter %><span><span><%= display_letter_score(letter) %></span></span></div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div id="game-controls"></div>
+
+  <div id="game-scores"></div>
+
+<% end %>

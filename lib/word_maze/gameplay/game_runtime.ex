@@ -261,7 +261,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
     {:noreply, state}
   end
 
-
   # Movement Logic
 
   def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}} = message, state) do

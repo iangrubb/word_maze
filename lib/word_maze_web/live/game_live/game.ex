@@ -1,9 +1,8 @@
-defmodule WordMazeWeb.GameLive.Show do
+defmodule WordMazeWeb.GameLive.Game do
   use WordMazeWeb, :live_view
 
   alias WordMaze.Gameplay
   alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor, GameHelpers }
-
 
   @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
   @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight", "w", "a", "s", "d"]
@@ -44,88 +43,10 @@ defmodule WordMazeWeb.GameLive.Show do
 
 
 
- # Functions for computing view properties
-
-  def screen_scroll(location) do
-    {x, y} = location
-    x_translate =
-      cond do
-        x < 6 -> 0
-        x > 17 -> 13
-        true -> x - 5
-      end
-    y_translate =
-      cond do
-        y < 6 -> 0
-        y > 17 -> 13
-        true -> y - 5
-      end
-    "transform: translate(calc(#{x_translate}/23 * -100%), calc(#{y_translate}/23 * -100%))"
-  end
-
-  def place_player(player, user_controlled) do
-  {x, y} = player.location
-  location = "calc( #{x} * 200% + 50% ), calc( #{y} * 200% + 50% )"
-  "border: 2px solid #{player.color};
-   transform: translate(#{location}) scale(1.5);
-   z-index: #{if user_controlled, do: 3, else: 2};
-  "
-  end
-
-  def reveal_tile({x, y}) do
-    "grid-area: #{y + 1} / #{x + 1} / #{y + 2} / #{x + 2};"
-  end
-
-  def light_translate({x, y}) do
-    "transform: translate(calc(#{x - 5} / 11 * 100%), calc(#{y - 5}/ 11 * 100%))"
-  end
-
-  def view_path_cutout(spaces, {x, y} = location) do
-
-    {up, right, down, left} = GameHelpers.view_distances(spaces, location)
-
-    "clip-path: polygon(
-      calc((#{x}/23) * 100% - 4px)              0,
-      0                                         0,
-      0                                         100%,
-      100%                                      100%,
-      100%                                      0,
-      calc((#{x}/23) * 100% - 4px)              0,
-      calc((#{x}/23) * 100% - 4px)              calc((#{y - up}/23) * 100% - 4px),
-      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y - up}/23) * 100% - 4px),
-      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y}/23) * 100% - 4px),
-      calc((#{x + 1 + right}/23) * 100% + 4px)  calc((#{y}/23) * 100% - 4px),
-      calc((#{x + 1 + right}/23) * 100% + 4px)  calc((#{y + 1}/23) * 100% + 4px),
-      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y + 1}/23) * 100% + 4px),
-      calc((#{x + 1}/23) * 100% + 4px)          calc((#{y + 1 + down}/23) * 100% + 4px),
-      calc((#{x}/23) * 100% - 4px)              calc((#{y + 1 + down}/23) * 100% + 4px),
-      calc((#{x}/23) * 100% - 4px)              calc((#{y + 1}/23) * 100% + 4px),
-      calc((#{x - left}/23) * 100% - 4px)       calc((#{y + 1}/23) * 100% + 4px),
-      calc((#{x - left}/23) * 100% - 4px)       calc((#{y}/23) * 100% - 4px),
-      calc((#{x}/23) * 100% - 4px)              calc((#{y}/23) * 100% - 4px)
-    )"
-  end
 
   def display_letter_score(letter) do
     GameHelpers.letter_scores()[letter]
   end
-
-  def typing_button_style(spaces, location) do
-    case Enum.find(GameHelpers.visible_spaces(spaces, location), fn space -> spaces[space].letter == nil end) do
-      nil -> "background: gray"
-      _   -> "background: white"
-    end
-  end
-
-  def typing_button_text(typing) do
-    "#{if typing, do: "Stop", else: "Start"} Typing"
-  end
-
-
-  # <button phx-click="toggle-typing" style="<%= typing_button_style(@spaces, @players[@player_id].location) %>">
-  #     <%= typing_button_text(@typing) %>
-  #   </button>
-
 
   def input_region_style(typing, input, {x, y}) do
     case typing do
@@ -152,7 +73,6 @@ defmodule WordMazeWeb.GameLive.Show do
   end
 
   def input_cursor_style(typing, word_input) do
-
     case typing do
       true ->
         case input_address(word_input) do
@@ -215,10 +135,6 @@ defmodule WordMazeWeb.GameLive.Show do
 
   end
 
-
-
-
-  ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight", "w", "a", "s", "d"]
 
   # Funcitons for movement
 
@@ -347,6 +263,33 @@ defmodule WordMazeWeb.GameLive.Show do
 
   end
 
+  def place_letter(hand_index, hand, location, spaces) do
+
+    case spaces[location].letter == nil and not Enum.any?(hand, fn {_, l} -> l == location end) do
+      true ->
+        # Add check if submission should be attempted. Broadcast if true.
+        {{letter, _}, rem} = List.pop_at(hand, hand_index)
+        %{hand: List.replace_at(hand, hand_index, {letter, location})}
+      false   -> %{}
+    end
+
+  end
+
+  # Remove letter function, call on click and on appropriate move
+
+  def unplace_letter(hand_index, hand) do
+    {{letter, _}, rem} = List.pop_at(hand, hand_index)
+    %{ hand: List.replace_at(hand, hand_index, {letter, nil})}
+  end
+
+
+
+
+
+
+
+
+
 
 
 
@@ -358,15 +301,15 @@ defmodule WordMazeWeb.GameLive.Show do
     {:noreply, new_socket}
   end
 
-  def handle_event("keydown", %{"key" => key}, socket) when key in @alphabet do
-    %{typing: typing, word_input: word_input, hand: hand} = socket.assigns
-    case typing do
-      true ->
-        new_word_input = handle_letter_input(key, word_input, hand)
-        {:noreply, assign(socket, :word_input, new_word_input)}
-      false -> {:noreply, socket}
-    end
-  end
+  # def handle_event("keydown", %{"key" => key}, socket) when key in @alphabet do
+  #   %{typing: typing, word_input: word_input, hand: hand} = socket.assigns
+  #   case typing do
+  #     true ->
+  #       new_word_input = handle_letter_input(key, word_input, hand)
+  #       {:noreply, assign(socket, :word_input, new_word_input)}
+  #     false -> {:noreply, socket}
+  #   end
+  # end
 
   def handle_event("keydown", %{"key" => key}, socket) do
     {:noreply, socket}
@@ -375,6 +318,13 @@ defmodule WordMazeWeb.GameLive.Show do
   def handle_event("toggle-typing", _value, socket) do
     new_socket = toggle_typing(socket)
     {:noreply, new_socket}
+  end
+
+  def handle_event("place-letter", %{"position" => position}, socket) do
+    %{player_id: player_id, players: players, hand: hand, spaces: spaces} = socket.assigns
+    {index, _} = Integer.parse(position)
+    update = place_letter(index, hand, players[player_id].location, spaces)
+    { :noreply, assign(socket, update) }
   end
 
 
