@@ -3,7 +3,7 @@ defmodule ScreenOverlay do
   # the line below would be: use MyAppWeb, :live_component
   use Phoenix.LiveComponent
 
-  alias WordMaze.Gameplay.{ GameHelpers, Letters }
+  alias WordMaze.Gameplay.{ Visibility, Letters }
 
   def render(assigns) do
     ~L"""
@@ -25,7 +25,7 @@ defmodule ScreenOverlay do
   end
 
   def view_path_cutout(spaces, {x, y} = location) do
-    {up, right, down, left} = GameHelpers.view_distances(spaces, location)
+    {up, right, down, left} = Visibility.view_distances(spaces, location)
     "clip-path: polygon(
       calc((#{x}/23) * 100% - 4px)              0,
       0                                         0,

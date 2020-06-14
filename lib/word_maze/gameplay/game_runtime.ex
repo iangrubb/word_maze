@@ -1,6 +1,6 @@
 defmodule WordMaze.Gameplay.GameRuntime do
 
-  alias WordMaze.Gameplay.{ GameHelpers, GameInitializer, Players }
+  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players }
 
   use GenServer
 
@@ -56,15 +56,11 @@ defmodule WordMaze.Gameplay.GameRuntime do
   end
 
 
-
-
-
+  # Socket Messages
 
   def handle_info(%{event: "server:" <> _message }, state) do
     {:noreply, state}
   end
-
-  # Movement Logic
 
   def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}} = message, state) do
     updated_state = attempt_move(state, player_id, direction)
@@ -88,7 +84,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
         player = state.players[player_id]
 
-        viewing_spaces = GameHelpers.visible_spaces(state.spaces, target)
+        viewing_spaces = Visibility.visible_spaces(state.spaces, target)
         viewed_spaces =
           player.viewed_spaces
           |> Enum.concat(viewing_spaces)

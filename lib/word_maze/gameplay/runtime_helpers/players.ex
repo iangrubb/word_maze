@@ -1,6 +1,6 @@
 defmodule WordMaze.Gameplay.Players do
 
-  alias WordMaze.Gameplay.{ Letters, GameHelpers }
+  alias WordMaze.Gameplay.{ Letters, Visibility }
 
   def initialize(state, player_id) do
 
@@ -68,7 +68,7 @@ defmodule WordMaze.Gameplay.Players do
 
   defp set_initial_view(player_state, spaces) do
 
-    viewed_spaces = GameHelpers.visible_spaces(spaces, player_state.location)
+    viewed_spaces = Visibility.visible_spaces(spaces, player_state.location)
     viewed_letters = Enum.filter(viewed_spaces, fn address -> spaces[address].letter !== nil end)
 
     player_state

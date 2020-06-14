@@ -1,4 +1,4 @@
-defmodule WordMaze.Gameplay.GameHelpers do
+defmodule WordMaze.Gameplay.Visibility do
 
 
   def visibility_in_direction(spaces, location, direction), do: visibility_in_direction(spaces, location, direction, 0)

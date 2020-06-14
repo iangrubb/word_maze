@@ -250,12 +250,9 @@ body{
   height: 12vw;
   max-width: 48px;
   max-height: 48px;
-  background: rgb(34, 37, 48);
-  color: rgb(227, 232, 238);
 
   cursor: pointer;
-
-  box-shadow: 2px 2px 0 rgb(71, 73, 82);
+  
 }
 
 .board-letter {
