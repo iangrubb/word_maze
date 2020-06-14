@@ -6,7 +6,12 @@ defmodule HandLetter do
 
   def render(assigns) do
     ~L"""
-    <div class="letter hand-letter" style="<%= location_style(@location) %>" phx-click="place-letter" phx-value-position="<%= @position %>">
+    <div
+      class="letter hand-letter"
+      style="<%= location_style(@location) %>"
+      phx-click="<%= click_event(@location) %>"
+      phx-value-position="<%= @position %>"
+    >
       <%= @letter %>
       <span><span><%= display_letter_score(@letter) %></span></span>
     </div>
@@ -15,6 +20,13 @@ defmodule HandLetter do
 
   def display_letter_score(letter) do
     Letters.scores()[letter]
+  end
+
+  def click_event(location) do
+    case location do
+      nil -> "place-letter"
+      _   -> "unplace-letter"
+    end
   end
 
   def location_style(location) do

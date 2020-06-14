@@ -38,6 +38,23 @@ defmodule WordMaze.Gameplay.Letters do
     letter
   end
 
+  def place_letter(hand_index, hand, location, spaces) do
+    case spaces[location].letter == nil and not Enum.any?(hand, fn {_, l} -> l == location end) do
+      true ->
+        # Add check if submission should be attempted. Broadcast if true.
+        {{letter, _}, rem} = List.pop_at(hand, hand_index)
+        %{hand: List.replace_at(hand, hand_index, {letter, location})}
+      false   -> %{}
+    end
+  end
+
+  def unplace_letter(hand_index, hand) do
+    {{letter, _}, rem} = List.pop_at(hand, hand_index)
+    %{ hand: List.replace_at(hand, hand_index, {letter, nil})}
+  end
+
+
+
   def frequencies() do
     %{
       "a" => 9,

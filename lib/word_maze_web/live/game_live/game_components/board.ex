@@ -10,11 +10,18 @@ defmodule Board do
 
       <%= for { _ , %{x: x, y: y, class: class, letter: letter} } <- @spaces do %>
         <div class="<%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;">
-          <%= if letter != nil do %>
-            <div class="letter board-letter"><%= letter %><span><span><%= display_letter_score(letter) %></span></span></div>
+
+          <%= if letter do %>
+            <%= live_component @socket, BoardLetter, letter: letter %>
           <% end %>
+
+          <%= if Enum.find(@hand, fn {let, loc} -> loc == {x, y} end) do %>
+            <%= live_component @socket, TemporaryLetter, location: {x, y}, hand: @hand %>
+          <% end %>
+
         </div>
       <% end %>
+
 
       <%= for { player_id, player } <- @players do %>
         <div class="character" style="<%= place_player(player, @player_id == player_id) %>" id="<%= player_id %>"></div>
@@ -47,6 +54,10 @@ defmodule Board do
 
   def display_letter_score(letter) do
     Letters.scores()[letter]
+  end
+
+  def place_letter({x, y}) do
+    "grid-area:#{y + 1}/#{x + 1}/#{y + 2}/#{x + 2};"
   end
 
   def place_player(player, user_controlled) do
