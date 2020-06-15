@@ -12,7 +12,7 @@ defmodule WordMaze.Gameplay.Players do
       defaults
       |> set_initial_location(Enum.count(state.players))
       |> set_color(Enum.count(state.players))
-      |> set_initial_hand()
+      |> set_initial_letters()
       |> set_initial_view(state.spaces)
 
     %{state | players: Map.put(state.players, player_id, player_state)}
@@ -23,7 +23,7 @@ defmodule WordMaze.Gameplay.Players do
 
     %{
       spaces: state.spaces,
-      hand: player_data.hand,
+      letters: player_data.letters,
       viewed_spaces: player_data.viewed_spaces,
       viewed_letters: player_data.viewed_letters,
       players: Enum.reduce(state.players, %{}, fn ({player_id, data}, acc) ->
@@ -31,6 +31,16 @@ defmodule WordMaze.Gameplay.Players do
       end )
     }
   end
+
+  def local_state(game_id, player_id, letters) do
+    %{
+      game_id: game_id,
+      player_id: player_id,
+      connected: true,
+      hand: Letters.initialize_hand(letters)
+    }
+  end
+
 
 
 
@@ -59,11 +69,11 @@ defmodule WordMaze.Gameplay.Players do
 
   end
 
-  defp set_initial_hand(player_state) do
-    hand =
+  defp set_initial_letters(player_state) do
+    letters =
       [1, 2, 3, 4, 5, 6]
       |> Enum.map(fn _n -> Letters.generate() end )
-    Map.put(player_state, :hand, hand)
+    Map.put(player_state, :letters, letters)
   end
 
   defp set_initial_view(player_state, spaces) do

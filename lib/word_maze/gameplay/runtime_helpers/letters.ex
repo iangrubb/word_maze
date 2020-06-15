@@ -38,6 +38,18 @@ defmodule WordMaze.Gameplay.Letters do
     letter
   end
 
+
+
+  def add_to_hand(letter) do
+    {letter, nil}
+  end
+
+  def initialize_hand(letters) do
+    Enum.map(letters, fn letter -> add_to_hand(letter) end)
+  end
+
+
+
   def place_letter(hand_index, hand, location, spaces) do
     case spaces[location].letter == nil and not Enum.any?(hand, fn {_, l} -> l == location end) do
       true ->
@@ -116,6 +128,8 @@ defmodule WordMaze.Gameplay.Letters do
       "z" => 10,
     }
   end
+
+  @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
 
 

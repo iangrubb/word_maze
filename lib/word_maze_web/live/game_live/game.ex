@@ -2,34 +2,23 @@ defmodule WordMazeWeb.GameLive.Game do
   use WordMazeWeb, :live_view
 
   alias WordMaze.Gameplay
-  alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor, Visibility, Letters, Movement }
+  alias WordMaze.Gameplay.{ GameRuntime, RuntimeMonitor, Visibility, Letters, Movement, Players }
 
-  @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
   @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight", "w", "a", "s", "d"]
 
   @impl true
   def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
-
     if connected?(socket) do
-
       WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
-
       case RuntimeMonitor.new_connection(self(), player_id, game_id) do
         :full ->
           WordMazeWeb.Endpoint.unsubscribe("game:#{game_id}")
           {:ok, assign(socket, :connected, false)}
         game_state ->
-          local_defaults =
-            %{
-              game_id: game_id,
-              player_id: player_id,
-              connected: true,
-              hand: Enum.map(game_state.hand, fn letter -> initialize_hand_letter(letter) end)
-            }
           new_socket =
             socket
             |> assign(game_state)
-            |> assign(local_defaults)
+            |> assign(Players.local_state(game_id, player_id, game_state.letters))
           {:ok, new_socket}
       end
     else
@@ -61,11 +50,6 @@ defmodule WordMazeWeb.GameLive.Game do
 
 
 
-  def initialize_hand_letter(letter) do
-    {letter, nil}
-  end
-
-
 
   # Event handlers
 
@@ -82,7 +66,7 @@ defmodule WordMazeWeb.GameLive.Game do
         "d"         -> :right
       end
     %{player_id: player_id, game_id: game_id} = socket.assigns
-    updates = Movement.attempt_movement(game_id, player_id, direction)
+    updates = Movement.request_movement(game_id, player_id, direction)
     {:noreply, assign(socket, updates)}
   end
 
@@ -112,27 +96,16 @@ defmodule WordMazeWeb.GameLive.Game do
     {:noreply, socket}
   end
 
-  def handle_info(%{event: "server:new_location", payload:
+  def handle_info(%{event: "server:movement", payload:
     %{player_id: player_id,
       location: location,
-      viewing_spaces: viewing_spaces,
-      viewing_letters: viewing_letters}}, socket)
+      viewed_spaces: viewed_spaces,
+      viewed_letters: viewed_letters}}, socket)
   do
-    player = socket.assigns.players[player_id]
-    new_player = %{ player | location: location}
-    new_players = Map.put(socket.assigns.players, player_id, new_player)
-
+    new_players = Movement.process_new_location(socket.assigns.players, player_id, location)
     new_socket =
       case socket.assigns.player_id == player_id do
         true ->
-          viewed_spaces =
-            socket.assigns.viewed_spaces
-            |> Enum.concat(viewing_spaces)
-            |> Enum.uniq()
-          viewed_letters =
-            socket.assigns.viewed_letters
-            |> Enum.concat(viewing_letters)
-            |> Enum.uniq()
           assign(socket, players: new_players, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters)
         false ->
           assign(socket, :players, new_players)

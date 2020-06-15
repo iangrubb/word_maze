@@ -1,6 +1,6 @@
 defmodule WordMaze.Gameplay.GameRuntime do
 
-  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players }
+  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players, Movement }
 
   use GenServer
 
@@ -63,54 +63,11 @@ defmodule WordMaze.Gameplay.GameRuntime do
   end
 
   def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}} = message, state) do
-    updated_state = attempt_move(state, player_id, direction)
-    {:noreply, updated_state}
+    players = Movement.attempt_move(state.spaces, state.players, state.game_id, player_id, direction)
+    {:noreply, %{ state | players: players }}
   end
 
-  defp attempt_move(state, player_id, direction) do
 
-    {x, y} = state.players[player_id].location
-
-    target =
-      case direction do
-        :left   -> {x - 1, y}
-        :down   -> {x, y + 1}
-        :up     -> {x, y - 1}
-        :right  -> {x + 1, y}
-      end
-
-    case state.spaces[target].open do
-      true ->
-
-        player = state.players[player_id]
-
-        viewing_spaces = Visibility.visible_spaces(state.spaces, target)
-        viewed_spaces =
-          player.viewed_spaces
-          |> Enum.concat(viewing_spaces)
-          |> Enum.uniq()
-
-        viewing_letters = Enum.filter(viewing_spaces, fn address -> state.spaces[address].letter !== nil end)
-        viewed_letters =
-          player.viewed_letters
-          |> Enum.concat(viewing_letters)
-          |> Enum.uniq()
-
-        WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_location",
-          %{
-            player_id: player_id,
-            location: target,
-            viewing_spaces: viewing_spaces,
-            viewing_letters: viewing_letters
-          }
-        )
-
-        new_player = %{ player | location: target, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters }
-
-        %{state | players: Map.put(state.players, player_id, new_player)}
-      false -> state
-    end
-  end
 
 
 
