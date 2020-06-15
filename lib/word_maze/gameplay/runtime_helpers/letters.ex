@@ -52,12 +52,47 @@ defmodule WordMaze.Gameplay.Letters do
 
 
 
-  def place_letter(hand_index, hand, location, spaces) do
+
+  def complete_word?(letters) do
+    Enum.count(letters) > 1 and not Enum.member?(letters, nil)
+  end
+
+  def letters_at_locations(locations, spaces, hand) do
+    Enum.map(locations, fn location ->
+      case { spaces[location].letter, Enum.find( Enum.with_index(hand), fn {{let, loc}, idx} -> loc == location end) } do
+        { nil, nil }                -> nil
+        { nil, {{let, _loc}, hand_idx} } -> { let, location, hand_idx }
+        { let, _   }                -> { let, location, nil }
+      end
+    end)
+  end
+
+  def place_letter(hand_index, hand, {x, y} = location, spaces, game_id, player_id) do
     case spaces[location].letter == nil and not Enum.any?(hand, fn {_, l} -> l == location end) do
       true ->
-        # Add check if submission should be attempted. Broadcast if true.
         {{letter, _}, rem} = List.pop_at(hand, hand_index)
-        %{hand: List.replace_at(hand, hand_index, {letter, location})}
+        new_hand = List.replace_at(hand, hand_index, {letter, location})
+
+        {horizontal_locations, vertical_locations} = Visibility.visible_axes(spaces, location)
+        horizontal_letters = letters_at_locations(horizontal_locations, spaces, new_hand)
+        vertical_letters = letters_at_locations(vertical_locations, spaces, new_hand)
+
+        case { complete_word?(horizontal_letters), complete_word?(vertical_letters) } do
+          { false, false } ->
+            %{hand: List.replace_at(hand, hand_index, {letter, location})}
+          { horizontal_finished, vertical_finished } ->
+
+            finished_words =
+              if horizontal_finished, do: [horizontal_letters] , else: []
+              |> Enum.concat( if vertical_finished, do: [vertical_letters], else: [])
+
+            WordMazeWeb.Endpoint.broadcast(
+              "game:#{game_id}", "client:submit_words",
+              %{player_id: player_id, submissions: finished_words}
+            )
+
+            %{hand: List.replace_at(hand, hand_index, {letter, location})}
+        end
       false   -> %{}
     end
   end
@@ -77,12 +112,9 @@ defmodule WordMaze.Gameplay.Letters do
         { _ , true }  -> { letter, location }
         { _ , false } -> { letter, nil}
       end
-    end )
+    end)
 
   end
-
-
-
 
 
   def frequencies() do

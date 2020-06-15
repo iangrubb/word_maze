@@ -1,6 +1,5 @@
 defmodule WordMaze.Gameplay.Visibility do
 
-
   def visibility_in_direction(spaces, location, direction), do: visibility_in_direction(spaces, location, direction, 0)
 
   defp visibility_in_direction(spaces, location, direction, acc) do
@@ -40,6 +39,13 @@ defmodule WordMaze.Gameplay.Visibility do
 
   end
 
+  def visible_axes(spaces, {x, y}) do
+
+    visible = visible_spaces(spaces, {x, y})
+
+    { Enum.filter(visible, fn {sx, sy} -> sy == y end), Enum.filter(visible, fn {sx, sy} -> sx == x end) }
+
+  end
 
 
 

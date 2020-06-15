@@ -1,6 +1,6 @@
 defmodule WordMaze.Gameplay.GameRuntime do
 
-  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players, Movement }
+  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players, Movement, Words }
 
   use GenServer
 
@@ -62,11 +62,46 @@ defmodule WordMaze.Gameplay.GameRuntime do
     {:noreply, state}
   end
 
-  def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}} = message, state) do
+  def handle_info(%{event: "client:move", payload: %{player_id: player_id, direction: direction}}, state) do
     players = Movement.attempt_move(state.spaces, state.players, state.game_id, player_id, direction)
     {:noreply, %{ state | players: players }}
   end
 
+  def handle_info( %{event: "client:submit_words", payload: %{player_id: player_id, submissions: submissions}}, state ) do
+
+    case Words.validate_submissions(submissions, state.spaces) do
+      true ->
+        # If valid, add letters to board, update scores, broadcast info. Let initiating player know how to update hand.
+
+        # Returns an array of data points, whihc then get put together into the final result
+        updates = Enum.map(submissions, fn submission -> Words.add_submission(submission, state.spaces) end)
+
+        updates =
+          case updates do
+            [ updates ]             -> updates
+            [ updates1, updates2 ]  -> Map.merge(updates1, updates2)
+          end
+
+        new_spaces = Enum.reduce( state.spaces, %{}, fn ({ loc , space }, acc) ->
+          case Map.fetch(updates, loc) do
+            :error -> Map.put(acc, loc, space)
+            letter -> Map.put(acc, loc, %{ space | letter: letter })
+          end
+        end)
+
+        WordMazeWeb.Endpoint.broadcast(
+          "game:#{game_id}", "server:announce_submission",
+          %{player_id: player_id, new_spaces: new_spaces}
+        )
+
+        {:noreply, %{ state | spaces: new_spaces } }
+      false ->
+        # If invalid, broadcast a message that makes player reset hand
+
+        {:noreply, state}
+    end
+
+  end
 
 
 

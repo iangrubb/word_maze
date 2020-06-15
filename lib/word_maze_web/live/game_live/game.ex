@@ -75,9 +75,9 @@ defmodule WordMazeWeb.GameLive.Game do
   end
 
   def handle_event("place-letter", %{"position" => position}, socket) do
-    %{player_id: player_id, players: players, hand: hand, spaces: spaces} = socket.assigns
+    %{player_id: player_id, players: players, hand: hand, spaces: spaces, game_id: game_id} = socket.assigns
     {index, _} = Integer.parse(position)
-    update = Letters.place_letter(index, hand, players[player_id].location, spaces)
+    update = Letters.place_letter(index, hand, players[player_id].location, spaces, game_id, player_id)
     { :noreply, assign(socket, update) }
   end
 
