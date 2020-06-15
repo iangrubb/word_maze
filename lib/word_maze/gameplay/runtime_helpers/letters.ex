@@ -1,5 +1,7 @@
 defmodule WordMaze.Gameplay.Letters do
 
+  alias WordMaze.Gameplay.Visibility
+
   def total(spaces, players) do
 
     hand_letters = Enum.flat_map(players, fn player -> player.hand end)
@@ -64,6 +66,22 @@ defmodule WordMaze.Gameplay.Letters do
     {{letter, _}, rem} = List.pop_at(hand, hand_index)
     %{ hand: List.replace_at(hand, hand_index, {letter, nil})}
   end
+
+  def unplace_unviewed_letters(hand, spaces, location) do
+
+    visible_spaces = Visibility.visible_spaces(spaces, location)
+
+    Enum.map(hand , fn {letter, location} ->
+      case { location, Enum.member?(visible_spaces, location) } do
+        { nil, _ }    -> { letter, location }
+        { _ , true }  -> { letter, location }
+        { _ , false } -> { letter, nil}
+      end
+    end )
+
+  end
+
+
 
 
 

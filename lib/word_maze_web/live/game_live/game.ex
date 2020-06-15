@@ -92,21 +92,26 @@ defmodule WordMazeWeb.GameLive.Game do
   # Message Handlers
 
   def handle_info(%{event: "client:" <> _message }, socket) do
-    #Ignore any messages from clients
     {:noreply, socket}
   end
 
   def handle_info(%{event: "server:movement", payload:
-    %{player_id: player_id,
+    %{player_id: moving_player_id,
       location: location,
       viewed_spaces: viewed_spaces,
       viewed_letters: viewed_letters}}, socket)
   do
-    new_players = Movement.process_new_location(socket.assigns.players, player_id, location)
+    %{players: players, player_id: player_id, spaces: spaces, hand: hand} = socket.assigns
+    new_players = Movement.process_new_location(players, moving_player_id, location)
     new_socket =
-      case socket.assigns.player_id == player_id do
+      case moving_player_id == player_id do
         true ->
-          assign(socket, players: new_players, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters)
+          new_hand = Letters.unplace_unviewed_letters(hand, spaces, location)
+          assign(socket,
+            players: new_players,
+            viewed_spaces: viewed_spaces,
+            viewed_letters: viewed_letters,
+            hand: new_hand)
         false ->
           assign(socket, :players, new_players)
       end
