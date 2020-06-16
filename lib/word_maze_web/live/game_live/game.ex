@@ -123,6 +123,13 @@ defmodule WordMazeWeb.GameLive.Game do
     {:noreply, assign(socket, :players, players)}
   end
 
+  def handle_info(%{event: "server:announce_submission_success", payload: %{player_id: submitting_player_id, new_spaces: new_spaces}}, socket) do
+
+    %{player_id: player_id, spaces: spaces} = socket.assigns
+
+    {:noreply, assign(socket, :spaces, new_spaces) }
+  end
+
 
 
 

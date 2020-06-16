@@ -68,6 +68,13 @@ defmodule WordMaze.Gameplay.Letters do
   end
 
   def place_letter(hand_index, hand, {x, y} = location, spaces, game_id, player_id) do
+
+
+
+    # Only allow letter placement when there's at least one tile in the row or column.
+    # Refactor into a valid_location? function
+
+
     case spaces[location].letter == nil and not Enum.any?(hand, fn {_, l} -> l == location end) do
       true ->
         {{letter, _}, rem} = List.pop_at(hand, hand_index)

@@ -20,7 +20,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
     GenServer.call(pid, :get_pid)
   end
 
-
   # Runtime Callbacks
 
   def init(game_id) do
@@ -85,12 +84,12 @@ defmodule WordMaze.Gameplay.GameRuntime do
         new_spaces = Enum.reduce( state.spaces, %{}, fn ({ loc , space }, acc) ->
           case Map.fetch(updates, loc) do
             :error -> Map.put(acc, loc, space)
-            letter -> Map.put(acc, loc, %{ space | letter: letter })
+            {:ok, letter} -> Map.put(acc, loc, %{ space | letter: letter })
           end
         end)
 
         WordMazeWeb.Endpoint.broadcast(
-          "game:#{game_id}", "server:announce_submission",
+          "game:#{state.game_id}", "server:announce_submission_success",
           %{player_id: player_id, new_spaces: new_spaces}
         )
 
