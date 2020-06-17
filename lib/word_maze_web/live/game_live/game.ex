@@ -31,7 +31,14 @@ defmodule WordMazeWeb.GameLive.Game do
     <%= if @connected do %>
 
       <div id="game-screen" phx-window-keydown="keydown" phx-throttle="100">
-        <%= live_component @socket, Board, spaces: @spaces, viewed_spaces: @viewed_spaces, players: @players, player_id: @player_id, hand: @hand %>
+        <%= live_component @socket, Board,
+          spaces: @spaces,
+          viewed_spaces: @viewed_spaces,
+          viewed_letters: @viewed_letters,
+          players: @players,
+          player_id: @player_id,
+          hand: @hand
+        %>
       </div>
 
       <div id="game-letters">
@@ -42,7 +49,11 @@ defmodule WordMazeWeb.GameLive.Game do
 
       <div id="game-controls"></div>
 
-      <div id="game-scores"></div>
+      <div id="game-scores">
+        <%= for {_id, player} <- @players do %>
+          <div style="color: <%= player.color %>"><%= player.score %></div>
+        <% end %>
+      </div>
 
     <% end %>
     """
@@ -130,13 +141,22 @@ defmodule WordMazeWeb.GameLive.Game do
 
     %{player_id: player_id, spaces: spaces, hand: hand} = socket.assigns
 
+    indicies = Enum.map(letters_used, fn {_ , _ , idx} -> idx end)
+
+
+    # letters_used has the locations of used letters, add these to viewed letters for all players who have those locations in view.
+
+
+
+
+
     update =
       case submitting_player_id == player_id do
         true  ->
           filtered_hand =
             hand
             |> Enum.with_index()
-            |> Enum.filter(fn {_, idx} -> not Enum.member?(letters_used, idx) end)
+            |> Enum.filter(fn {_, idx} -> not Enum.member?(indicies, idx) end)
             |> Enum.map(fn {value, _} -> value end)
 
           %{spaces: new_spaces, hand: filtered_hand}

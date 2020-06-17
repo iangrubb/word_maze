@@ -95,24 +95,24 @@ defmodule WordMaze.Gameplay.GameRuntime do
         letters_used =
           combined_submissions
           |> Enum.filter(fn {_ , _ , idx} -> idx != nil end)
-          |> Enum.map(fn {_ , _ , idx} -> idx end)
+
+        player = state.players[player_id]
+
+        updated_player =
+          player
+          |> Map.put(:letters, player.letters -- Enum.map(letters_used, fn {l , _ , _} -> l end))
 
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:announce_submission_success",
           %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used}
         )
 
-        # Remove letters from player
-
-        {:noreply, %{ state | spaces: new_spaces } }
+        {:noreply, %{ state | spaces: new_spaces, players: Map.put(state.players, player_id, updated_player)}}
       false ->
-
         {:noreply, state}
     end
 
   end
-
-
 
 
 

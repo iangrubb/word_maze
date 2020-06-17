@@ -29,7 +29,12 @@ defmodule Board do
 
       <div class="overlay-light" style="<%= light_translate(@players[@player_id].location) %>"></div>
 
-      <%= live_component @socket, ScreenOverlay, spaces: @spaces, location: @players[@player_id].location , viewed_spaces: @viewed_spaces %>
+      <%= live_component @socket, ScreenOverlay,
+        spaces: @spaces,
+        location: @players[@player_id].location,
+        viewed_spaces: @viewed_spaces,
+        viewed_letters: @viewed_letters
+      %>
 
     </div>
     """
