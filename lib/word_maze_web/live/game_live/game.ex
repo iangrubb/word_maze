@@ -123,11 +123,27 @@ defmodule WordMazeWeb.GameLive.Game do
     {:noreply, assign(socket, :players, players)}
   end
 
-  def handle_info(%{event: "server:announce_submission_success", payload: %{player_id: submitting_player_id, new_spaces: new_spaces}}, socket) do
+  def handle_info(%{
+    event: "server:announce_submission_success",
+    payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used}
+  }, socket) do
 
-    %{player_id: player_id, spaces: spaces} = socket.assigns
+    %{player_id: player_id, spaces: spaces, hand: hand} = socket.assigns
 
-    {:noreply, assign(socket, :spaces, new_spaces) }
+    update =
+      case submitting_player_id == player_id do
+        true  ->
+          filtered_hand =
+            hand
+            |> Enum.with_index()
+            |> Enum.filter(fn {_, idx} -> not Enum.member?(letters_used, idx) end)
+            |> Enum.map(fn {value, _} -> value end)
+
+          %{spaces: new_spaces, hand: filtered_hand}
+        false -> %{spaces: new_spaces}
+      end
+
+    {:noreply, assign(socket, update)}
   end
 
 

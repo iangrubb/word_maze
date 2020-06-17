@@ -70,9 +70,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
     case Words.validate_submissions(submissions, state.spaces) do
       true ->
-        # If valid, add letters to board, update scores, broadcast info. Let initiating player know how to update hand.
 
-        # Returns an array of data points, whihc then get put together into the final result
         updates = Enum.map(submissions, fn submission -> Words.add_submission(submission, state.spaces) end)
 
         updates =
@@ -88,14 +86,26 @@ defmodule WordMaze.Gameplay.GameRuntime do
           end
         end)
 
+        combined_submissions =
+          case submissions do
+            [ sub ]             -> sub
+            [ sub1, sub2 ]  -> Map.merge(sub1, sub2)
+          end
+
+        letters_used =
+          combined_submissions
+          |> Enum.filter(fn {_ , _ , idx} -> idx != nil end)
+          |> Enum.map(fn {_ , _ , idx} -> idx end)
+
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:announce_submission_success",
-          %{player_id: player_id, new_spaces: new_spaces}
+          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used}
         )
+
+        # Remove letters from player
 
         {:noreply, %{ state | spaces: new_spaces } }
       false ->
-        # If invalid, broadcast a message that makes player reset hand
 
         {:noreply, state}
     end
