@@ -13,7 +13,6 @@ defmodule WordMaze.Gameplay.Players do
       |> set_initial_location(Enum.count(state.players))
       |> set_color(Enum.count(state.players))
       |> set_initial_letters()
-      |> set_initial_view(state.spaces)
 
     %{state | players: Map.put(state.players, player_id, player_state)}
   end
@@ -24,20 +23,25 @@ defmodule WordMaze.Gameplay.Players do
     %{
       spaces: state.spaces,
       letters: player_data.letters,
-      viewed_spaces: player_data.viewed_spaces,
-      viewed_letters: player_data.viewed_letters,
       players: Enum.reduce(state.players, %{}, fn ({player_id, data}, acc) ->
         Map.put(acc, player_id, %{ score: data.score, color: data.color, location: data.location})
       end )
     }
   end
 
-  def local_state(game_id, player_id, letters) do
+  def initialize_local_state(game_id, player_id, game_state) do
+
+    %{letters: letters, spaces: spaces, players: players} = game_state
+
+    viewed_spaces = Visibility.visible_spaces(spaces, players[player_id].location)
+
     %{
       game_id: game_id,
       player_id: player_id,
       connected: true,
-      hand: Letters.initialize_hand(letters)
+      hand: Letters.initialize_hand(letters),
+      viewed_spaces: viewed_spaces,
+      viewed_letters: Enum.filter(viewed_spaces, fn address -> spaces[address].letter !== nil end)
     }
   end
 
@@ -76,15 +80,5 @@ defmodule WordMaze.Gameplay.Players do
     Map.put(player_state, :letters, letters)
   end
 
-  defp set_initial_view(player_state, spaces) do
-
-    viewed_spaces = Visibility.visible_spaces(spaces, player_state.location)
-    viewed_letters = Enum.filter(viewed_spaces, fn address -> spaces[address].letter !== nil end)
-
-    player_state
-    |> Map.put(:viewed_spaces, viewed_spaces)
-    |> Map.put(:viewed_letters, viewed_letters)
-
-  end
 
 end

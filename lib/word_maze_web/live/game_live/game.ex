@@ -18,7 +18,7 @@ defmodule WordMazeWeb.GameLive.Game do
           new_socket =
             socket
             |> assign(game_state)
-            |> assign(Players.local_state(game_id, player_id, game_state.letters))
+            |> assign(Players.initialize_local_state(game_id, player_id, game_state))
           {:ok, new_socket}
       end
     else
@@ -109,19 +109,38 @@ defmodule WordMazeWeb.GameLive.Game do
   def handle_info(%{event: "server:movement", payload:
     %{player_id: moving_player_id,
       location: location,
-      viewed_spaces: viewed_spaces,
-      viewed_letters: viewed_letters}}, socket)
+      viewing_spaces: viewing_spaces,
+      viewing_letters: viewing_letters}}, socket)
   do
-    %{players: players, player_id: player_id, spaces: spaces, hand: hand} = socket.assigns
+    %{
+      players: players,
+      player_id: player_id,
+      spaces: spaces,
+      hand: hand,
+      viewed_spaces: viewed_spaces,
+      viewed_letters: viewed_letters
+    } = socket.assigns
+
     new_players = Movement.process_new_location(players, moving_player_id, location)
+
+    new_viewed_spaces =
+      viewed_spaces
+      |> Enum.concat(viewing_spaces)
+      |> Enum.uniq()
+
+    new_viewed_letters =
+      viewed_letters
+      |> Enum.concat(viewing_letters)
+      |> Enum.uniq()
+
     new_socket =
       case moving_player_id == player_id do
         true ->
           new_hand = Letters.unplace_unviewed_letters(hand, spaces, location)
           assign(socket,
             players: new_players,
-            viewed_spaces: viewed_spaces,
-            viewed_letters: viewed_letters,
+            viewed_spaces: new_viewed_spaces,
+            viewed_letters: new_viewed_letters,
             hand: new_hand)
         false ->
           assign(socket, :players, new_players)
@@ -139,15 +158,16 @@ defmodule WordMazeWeb.GameLive.Game do
     payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used}
   }, socket) do
 
-    %{player_id: player_id, spaces: spaces, hand: hand} = socket.assigns
+    %{player_id: player_id, players: players, spaces: spaces, hand: hand, viewed_letters: viewed_letters} = socket.assigns
 
     indicies = Enum.map(letters_used, fn {_ , _ , idx} -> idx end)
 
-
-    # letters_used has the locations of used letters, add these to viewed letters for all players who have those locations in view.
-
-
-
+    currently_visible = Visibility.visible_spaces(spaces, players[player_id].location)
+    updated_viewed_letters =
+      letters_used
+      |> Enum.filter(fn { _ , letter_location, _ } ->  Enum.member?(currently_visible, letter_location) end)
+      |> Enum.map(fn { _ , letter_location, _ } -> letter_location end)
+      |> Enum.concat(viewed_letters)
 
 
     update =
@@ -159,8 +179,8 @@ defmodule WordMazeWeb.GameLive.Game do
             |> Enum.filter(fn {_, idx} -> not Enum.member?(indicies, idx) end)
             |> Enum.map(fn {value, _} -> value end)
 
-          %{spaces: new_spaces, hand: filtered_hand}
-        false -> %{spaces: new_spaces}
+          %{spaces: new_spaces, viewed_letters: updated_viewed_letters, hand: filtered_hand}
+        false -> %{spaces: new_spaces, viewed_letters: updated_viewed_letters}
       end
 
     {:noreply, assign(socket, update)}

@@ -27,28 +27,20 @@ defmodule WordMaze.Gameplay.Movement do
 
     case spaces[target].open do
       true ->
+
         player = players[player_id]
 
         viewing_spaces = Visibility.visible_spaces(spaces, target)
-        viewed_spaces =
-          player.viewed_spaces
-          |> Enum.concat(viewing_spaces)
-          |> Enum.uniq()
-
         viewing_letters = Enum.filter(viewing_spaces, fn address -> spaces[address].letter !== nil end)
-        viewed_letters =
-          player.viewed_letters
-          |> Enum.concat(viewing_letters)
-          |> Enum.uniq()
 
         WordMazeWeb.Endpoint.broadcast("game:#{game_id}", "server:movement",
           %{ player_id: player_id,
             location: target,
-            viewed_spaces: viewed_spaces,
-            viewed_letters: viewed_letters
+            viewing_spaces: viewing_spaces,
+            viewing_letters: viewing_letters
           }
         )
-        new_player = %{ player | location: target, viewed_spaces: viewed_spaces, viewed_letters: viewed_letters }
+        new_player = %{ player | location: target }
         Map.put(players, player_id, new_player)
       false -> players
     end

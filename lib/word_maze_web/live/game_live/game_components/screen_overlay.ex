@@ -10,7 +10,7 @@ defmodule ScreenOverlay do
     <div id="screen-overlay" style="<%= view_path_cutout(@spaces, @location) %>" >
       <%= for address <- @viewed_spaces do %>
         <div class="revealed-space" style="<%= place_tile(address) %>">
-          <%= if  @spaces[address].letter != nil and Enum.member?(@viewed_letters, address) do %>
+          <%= if Enum.member?(@viewed_letters, address) do %>
             <div class="letter viewed-letter">
               <%= @spaces[address].letter %>
               <span><span><%= display_letter_score(@spaces[address].letter) %></span></span>
