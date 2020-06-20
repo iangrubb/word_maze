@@ -67,15 +67,20 @@ defmodule WordMaze.Gameplay.Letters do
     end)
   end
 
+  def valid_location?(spaces, location, hand) do
+
+    spaces[location].letter == nil and
+    not Enum.any?(hand, fn {_, l} -> l == location end) and
+    Enum.any?(Visibility.visible_spaces(spaces, location), fn loc -> spaces[loc].letter != nil end)
+
+  end
+
   def place_letter(hand_index, hand, {x, y} = location, spaces, game_id, player_id) do
-
-
 
     # Only allow letter placement when there's at least one tile in the row or column.
     # Refactor into a valid_location? function
 
-
-    case spaces[location].letter == nil and not Enum.any?(hand, fn {_, l} -> l == location end) do
+    case valid_location?(spaces, location, hand)  do
       true ->
         {{letter, _}, rem} = List.pop_at(hand, hand_index)
         new_hand = List.replace_at(hand, hand_index, {letter, location})
@@ -89,13 +94,12 @@ defmodule WordMaze.Gameplay.Letters do
             %{hand: List.replace_at(hand, hand_index, {letter, location})}
           { horizontal_finished, vertical_finished } ->
 
-            finished_words =
-              if horizontal_finished, do: [horizontal_letters] , else: []
-              |> Enum.concat( if vertical_finished, do: [vertical_letters], else: [])
+            possible_horizontal_word = if horizontal_finished, do: [horizontal_letters] , else: []
+            possible_vertical_word = if vertical_finished, do: [vertical_letters], else: []
 
             WordMazeWeb.Endpoint.broadcast(
               "game:#{game_id}", "client:submit_words",
-              %{player_id: player_id, submissions: finished_words}
+              %{player_id: player_id, submissions: Enum.concat(possible_horizontal_word, possible_vertical_word)}
             )
 
             %{hand: List.replace_at(hand, hand_index, {letter, location})}

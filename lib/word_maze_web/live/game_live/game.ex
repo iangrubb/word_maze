@@ -154,9 +154,13 @@ defmodule WordMazeWeb.GameLive.Game do
   end
 
   def handle_info(%{
-    event: "server:announce_submission_success",
+    event: "server:submission_success",
     payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used}
   }, socket) do
+
+
+    # Update player hands when a new word occupies a space with a current tentative letter.
+    # Factor into word helper methods.
 
     %{player_id: player_id, players: players, spaces: spaces, hand: hand, viewed_letters: viewed_letters} = socket.assigns
 

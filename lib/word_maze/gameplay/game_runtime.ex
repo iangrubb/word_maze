@@ -103,7 +103,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
           |> Map.put(:letters, player.letters -- Enum.map(letters_used, fn {l , _ , _} -> l end))
 
         WordMazeWeb.Endpoint.broadcast(
-          "game:#{state.game_id}", "server:announce_submission_success",
+          "game:#{state.game_id}", "server:submission_success",
           %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used}
         )
 
