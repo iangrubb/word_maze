@@ -104,7 +104,7 @@ defmodule WordMaze.Gameplay.Letters do
 
             %{hand: List.replace_at(hand, hand_index, {letter, location})}
         end
-      false   -> %{}
+      false -> %{}
     end
   end
 
