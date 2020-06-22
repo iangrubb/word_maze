@@ -10,12 +10,13 @@ defmodule WordMaze.Gameplay.Words do
 
   def valid_submission?(submission, spaces) do
 
+    sorted_submission = Enum.sort_by(submission, fn {_, {x, y} , _} -> x + y end)
+
     word =
-      submission
+      sorted_submission
       |> Enum.reduce("", fn ({letter, _ , _}, acc) -> acc <> letter end)
 
-    IO.inspect Enum.all?(submission, fn {_, location , flag} -> flag == nil or spaces[location].letter == nil end) and Dictionary.lookup(word)
-    Enum.all?(submission, fn {_, location , flag} -> flag == nil or spaces[location].letter == nil end) and Dictionary.lookup(word)
+    Enum.all?(sorted_submission, fn {_, location , flag} -> flag == nil or spaces[location].letter == nil end) and Dictionary.lookup(word)
   end
 
 

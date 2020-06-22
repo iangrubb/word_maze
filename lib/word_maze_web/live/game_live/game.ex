@@ -190,6 +190,11 @@ defmodule WordMazeWeb.GameLive.Game do
     {:noreply, assign(socket, update)}
   end
 
+  def handle_info(%{event: "server:new_letter", payload: %{player_id: player_id, letter: letter}}, socket) do
+    {:noreply, assign(socket, :hand, Enum.concat(socket.assigns.hand, [Letters.add_to_hand(letter)]))}
+  end
+
+
 
 
 

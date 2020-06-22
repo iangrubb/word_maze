@@ -41,13 +41,36 @@ defmodule WordMaze.Gameplay.Letters do
   end
 
 
-
   def add_to_hand(letter) do
     {letter, nil}
   end
 
   def initialize_hand(letters) do
     Enum.map(letters, fn letter -> add_to_hand(letter) end)
+  end
+
+
+
+
+  def give_letter(players, player_id, game_id) do
+    player = players[player_id]
+    new_letter = generate()
+    updated_player = %{ player | letters: [ new_letter | player.letters]}
+
+    WordMazeWeb.Endpoint.broadcast(
+      "game:#{game_id}", "server:new_letter",
+      %{player_id: player_id, letter: new_letter}
+    )
+
+    Map.put(players, player_id, updated_player)
+  end
+
+  def schedule_new_letter(player_id) do
+    pid = self()
+    spawn(fn ->
+      :timer.sleep(1000)
+      send(pid, {:new_letter, player_id})
+    end)
   end
 
 
@@ -126,7 +149,6 @@ defmodule WordMaze.Gameplay.Letters do
     end)
 
   end
-
 
   def frequencies() do
     %{

@@ -1,6 +1,6 @@
 defmodule WordMaze.Gameplay.GameRuntime do
 
-  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players, Movement, Words }
+  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players, Movement, Words, Letters }
 
   use GenServer
 
@@ -54,6 +54,19 @@ defmodule WordMaze.Gameplay.GameRuntime do
       end
   end
 
+  def handle_info({:new_letter, player_id}, state) do
+    %{players: players, game_id: game_id} = state
+
+    if Enum.count(players[player_id].letters) < 7 do
+      new_players = Letters.give_letter(players, player_id, game_id)
+      Letters.schedule_new_letter(player_id)
+      {:noreply, %{ state | players: new_players}}
+    else
+      {:noreply, state}
+    end
+
+  end
+
 
   # Socket Messages
 
@@ -101,6 +114,8 @@ defmodule WordMaze.Gameplay.GameRuntime do
         updated_player =
           player
           |> Map.put(:letters, player.letters -- Enum.map(letters_used, fn {l , _ , _} -> l end))
+
+        Letters.schedule_new_letter(player_id)
 
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:submission_success",
