@@ -159,6 +159,7 @@ defmodule WordMazeWeb.GameLive.Game do
   }, socket) do
 
 
+
     # Update player hands when a new word occupies a space with a current tentative letter.
 
 
@@ -196,13 +197,19 @@ defmodule WordMazeWeb.GameLive.Game do
     {:noreply, assign(socket, update)}
   end
 
+  def handle_info(%{event: "server:submission_failure", payload: %{player_id: player_id}}, socket) do
+    case player_id == socket.assigns.player_id do
+      true  ->
+        new_hand = Enum.map(socket.assigns.hand, fn {letter, _} -> {letter, nil} end)
+
+        {:noreply, assign(socket, :hand, new_hand)}
+      false -> {:noreply, socket}
+    end
+  end
+
   def handle_info(%{event: "server:new_letter", payload: %{player_id: player_id, letter: letter}}, socket) do
     {:noreply, assign(socket, :hand, Enum.concat(socket.assigns.hand, [Letters.add_to_hand(letter)]))}
   end
-
-
-
-
 
 
 

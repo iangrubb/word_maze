@@ -80,7 +80,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
   end
 
   def handle_info(%{event: "client:submit_words", payload: %{player_id: player_id, submissions: submissions}}, state ) do
-
     case Words.validate_submissions(submissions, state.spaces) do
       true ->
         updates = Enum.map(submissions, fn submission -> Words.add_submission(submission, state.spaces) end)
@@ -130,9 +129,14 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
         {:noreply, %{ state | spaces: new_spaces, players: Map.put(state.players, player_id, updated_player)}}
       false ->
+
+        WordMazeWeb.Endpoint.broadcast(
+          "game:#{state.game_id}", "server:submission_failure",
+          %{player_id: player_id}
+        )
+
         {:noreply, state}
     end
-
   end
 
 
