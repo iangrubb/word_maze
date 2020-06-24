@@ -55,6 +55,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
   end
 
   def handle_info({:new_letter, player_id}, state) do
+
     %{players: players, game_id: game_id} = state
 
     if Enum.count(players[player_id].letters) < 7 do
