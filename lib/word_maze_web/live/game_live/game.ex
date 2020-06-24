@@ -176,7 +176,7 @@ defmodule WordMazeWeb.GameLive.Game do
       |> Enum.map(fn { _ , letter_location, _ } -> letter_location end)
       |> Enum.concat(viewed_letters)
 
-    player = players[player_id]
+    player = players[submitting_player_id]
 
     updated_players = Map.put(players, player_id, %{ player | score: new_score} )
 
