@@ -155,25 +155,31 @@ defmodule WordMazeWeb.GameLive.Game do
 
   def handle_info(%{
     event: "server:submission_success",
-    payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used}
+    payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: new_score}
   }, socket) do
 
 
     # Update player hands when a new word occupies a space with a current tentative letter.
-    # Factor into word helper methods.
+
+
 
     %{player_id: player_id, players: players, spaces: spaces, hand: hand, viewed_letters: viewed_letters} = socket.assigns
 
     indicies = Enum.map(letters_used, fn {_ , _ , idx} -> idx end)
 
     currently_visible = Visibility.visible_spaces(spaces, players[player_id].location)
+
     updated_viewed_letters =
       letters_used
       |> Enum.filter(fn { _ , letter_location, _ } ->  Enum.member?(currently_visible, letter_location) end)
       |> Enum.map(fn { _ , letter_location, _ } -> letter_location end)
       |> Enum.concat(viewed_letters)
 
+    player = players[player_id]
 
+    updated_players = Map.put(players, player_id, %{ player | score: new_score} )
+
+    base_update = %{spaces: new_spaces, viewed_letters: updated_viewed_letters, players: updated_players}
     update =
       case submitting_player_id == player_id do
         true  ->
@@ -183,8 +189,8 @@ defmodule WordMazeWeb.GameLive.Game do
             |> Enum.filter(fn {_, idx} -> not Enum.member?(indicies, idx) end)
             |> Enum.map(fn {value, _} -> value end)
 
-          %{spaces: new_spaces, viewed_letters: updated_viewed_letters, hand: filtered_hand}
-        false -> %{spaces: new_spaces, viewed_letters: updated_viewed_letters}
+          Map.put(base_update, :hand, filtered_hand)
+        false -> base_update
       end
 
     {:noreply, assign(socket, update)}

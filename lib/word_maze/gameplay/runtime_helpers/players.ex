@@ -75,7 +75,7 @@ defmodule WordMaze.Gameplay.Players do
 
   defp set_initial_letters(player_state) do
     letters =
-      [1, 2, 3, 4, 5, 6]
+      [1, 2, 3, 4, 5, 6, 7]
       |> Enum.map(fn _n -> Letters.generate() end )
     Map.put(player_state, :letters, letters)
   end

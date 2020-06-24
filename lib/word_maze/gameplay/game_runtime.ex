@@ -79,11 +79,10 @@ defmodule WordMaze.Gameplay.GameRuntime do
     {:noreply, %{ state | players: players }}
   end
 
-  def handle_info( %{event: "client:submit_words", payload: %{player_id: player_id, submissions: submissions}}, state ) do
+  def handle_info(%{event: "client:submit_words", payload: %{player_id: player_id, submissions: submissions}}, state ) do
 
     case Words.validate_submissions(submissions, state.spaces) do
       true ->
-
         updates = Enum.map(submissions, fn submission -> Words.add_submission(submission, state.spaces) end)
 
         updates =
@@ -109,17 +108,24 @@ defmodule WordMaze.Gameplay.GameRuntime do
           combined_submissions
           |> Enum.filter(fn {_ , _ , idx} -> idx != nil end)
 
+        submission_scores =
+          submissions
+          |> Enum.reduce(0, fn (submission, acc) ->
+            Words.calculate_score(submission) + acc
+          end)
+
         player = state.players[player_id]
 
         updated_player =
           player
           |> Map.put(:letters, player.letters -- Enum.map(letters_used, fn {l , _ , _} -> l end))
+          |> Map.put(:score, player.score + submission_scores)
 
         Letters.schedule_new_letter(player_id)
 
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:submission_success",
-          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used}
+          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: player.score + submission_scores}
         )
 
         {:noreply, %{ state | spaces: new_spaces, players: Map.put(state.players, player_id, updated_player)}}

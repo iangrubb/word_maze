@@ -1,6 +1,6 @@
 defmodule WordMaze.Gameplay.Words do
 
-  alias WordMaze.Gameplay.Dictionary
+  alias WordMaze.Gameplay.{ Dictionary, Letters }
 
   def validate_submissions(submissions, spaces) do
 
@@ -19,13 +19,18 @@ defmodule WordMaze.Gameplay.Words do
     Enum.all?(sorted_submission, fn {_, location , flag} -> flag == nil or spaces[location].letter == nil end) and Dictionary.lookup(word)
   end
 
-
   def add_submission(submission, spaces) do
 
     submission
     |> Enum.filter(fn { _ , _ , hand_idx} -> hand_idx != nil end)
     |> Enum.reduce(%{}, fn ({ letter , location , _}, map) -> Map.put(map, location, letter) end)
 
+  end
+
+  def calculate_score(submission) do
+    Enum.reduce(submission, 0, fn ({letter, _location, _hand_index}, acc) ->
+      Letters.scores()[letter] + acc
+    end)
   end
 
 end
