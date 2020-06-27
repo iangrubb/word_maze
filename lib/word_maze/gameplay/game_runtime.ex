@@ -83,43 +83,17 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def handle_info(%{event: "client:submit_words", payload: %{player_id: player_id, submissions: submissions}}, state ) do
     case Words.validate_submissions(submissions, state.spaces) do
       true ->
-        updates = Words.extract_updates(submissions, state.spaces)
 
-        new_spaces = Enum.reduce( state.spaces, %{}, fn ({ loc , space }, acc) ->
-          case Map.fetch(updates, loc) do
-            :error -> Map.put(acc, loc, space)
-            {:ok, letter} -> Map.put(acc, loc, %{ space | letter: letter })
-          end
-        end)
-
-        combined_submissions =
-          case submissions do
-            [ sub ]             -> sub
-            [ sub1, sub2 ]  -> Map.merge(sub1, sub2)
-          end
-
-        letters_used =
-          combined_submissions
-          |> Enum.filter(fn {_ , _ , idx} -> idx != nil end)
-
-        submission_scores =
-          submissions
-          |> Enum.reduce(0, fn (submission, acc) ->
-            Words.calculate_score(submission, state.spaces) + acc
-          end)
-
-        player = state.players[player_id]
-
-        updated_player =
-          player
-          |> Map.put(:letters, player.letters -- Enum.map(letters_used, fn {l , _ , _} -> l end))
-          |> Map.put(:score, player.score + submission_scores)
+        new_spaces = Words.update_spaces_for_submissions(submissions, state.spaces)
+        letters_used = Words.letters_used_by_submissions(submissions)
+        added_score = Words.submissions_score(submissions, state.spaces)
+        updated_player = Words.player_after_submission( state.players[player_id], letters_used, added_score )
 
         Letters.schedule_new_letter(player_id)
 
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:submission_success",
-          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: player.score + submission_scores}
+          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: updated_player.score}
         )
 
         {:noreply, %{ state | spaces: new_spaces, players: Map.put(state.players, player_id, updated_player)}}

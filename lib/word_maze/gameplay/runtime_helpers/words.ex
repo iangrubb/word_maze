@@ -27,7 +27,7 @@ defmodule WordMaze.Gameplay.Words do
 
   end
 
-  def calculate_score(submission, spaces) do
+  def word_score(submission, spaces) do
     Enum.reduce(submission, 0, fn ({letter, location, hand_index}, acc) ->
       multiplier =
         case hand_index do
@@ -39,13 +39,57 @@ defmodule WordMaze.Gameplay.Words do
     end)
   end
 
-  def extract_updates(submissions, spaces) do
+  def submissions_score(submissions, spaces) do
+
+    submissions
+    |> Enum.reduce(0, fn (submission, acc) ->
+      word_score(submission, spaces) + acc
+    end)
+
+  end
+
+
+  def update_spaces_for_submissions(submissions, spaces) do
+
     updates = Enum.map(submissions, fn submission -> add_submission(submission, spaces) end)
 
+    updates =
     case updates do
       [ updates ]             -> updates
       [ updates1, updates2 ]  -> Map.merge(updates1, updates2)
     end
+
+    Enum.reduce( spaces, %{}, fn ({ loc , space }, acc) ->
+      case Map.fetch(updates, loc) do
+        :error -> Map.put(acc, loc, space)
+        {:ok, letter} -> Map.put(acc, loc, %{ space | letter: letter })
+      end
+    end)
+
   end
+
+
+  def letters_used_by_submissions(submissions) do
+
+    combined_submissions =
+      case submissions do
+        [ sub ]             -> sub
+        [ sub1, sub2 ]  -> Map.merge(sub1, sub2)
+      end
+
+    combined_submissions
+    |> Enum.filter(fn {_ , _ , idx} -> idx != nil end)
+
+  end
+
+
+  def player_after_submission(player, letters_used, added_score) do
+
+    player
+    |> Map.put(:letters, player.letters -- Enum.map(letters_used, fn {l , _ , _} -> l end))
+    |> Map.put(:score, player.score + added_score)
+
+  end
+
 
 end
