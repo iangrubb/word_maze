@@ -83,13 +83,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def handle_info(%{event: "client:submit_words", payload: %{player_id: player_id, submissions: submissions}}, state ) do
     case Words.validate_submissions(submissions, state.spaces) do
       true ->
-        updates = Enum.map(submissions, fn submission -> Words.add_submission(submission, state.spaces) end)
-
-        updates =
-          case updates do
-            [ updates ]             -> updates
-            [ updates1, updates2 ]  -> Map.merge(updates1, updates2)
-          end
+        updates = Words.extract_updates(submissions, state.spaces)
 
         new_spaces = Enum.reduce( state.spaces, %{}, fn ({ loc , space }, acc) ->
           case Map.fetch(updates, loc) do
@@ -111,7 +105,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
         submission_scores =
           submissions
           |> Enum.reduce(0, fn (submission, acc) ->
-            Words.calculate_score(submission) + acc
+            Words.calculate_score(submission, state.spaces) + acc
           end)
 
         player = state.players[player_id]

@@ -27,10 +27,25 @@ defmodule WordMaze.Gameplay.Words do
 
   end
 
-  def calculate_score(submission) do
-    Enum.reduce(submission, 0, fn ({letter, _location, _hand_index}, acc) ->
-      Letters.scores()[letter] + acc
+  def calculate_score(submission, spaces) do
+    Enum.reduce(submission, 0, fn ({letter, location, hand_index}, acc) ->
+      multiplier =
+        case hand_index do
+          nil -> 1
+          _   -> spaces[location].multiplier
+        end
+      IO.puts Letters.scores()[letter] * multiplier
+      (Letters.scores()[letter] * multiplier ) + acc
     end)
+  end
+
+  def extract_updates(submissions, spaces) do
+    updates = Enum.map(submissions, fn submission -> add_submission(submission, spaces) end)
+
+    case updates do
+      [ updates ]             -> updates
+      [ updates1, updates2 ]  -> Map.merge(updates1, updates2)
+    end
   end
 
 end
