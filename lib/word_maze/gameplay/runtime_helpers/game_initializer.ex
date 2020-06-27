@@ -12,29 +12,31 @@ defmodule WordMaze.Gameplay.GameInitializer do
 
   end
 
+  @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+
   @board [
     ~w(╔ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ╗),
-    ~w(║ t i l e █ . . . . . █ . . . . . █ t i l e ║),
+    ~w(║ n . . . █ 3 . . . . █ . . . . 3 █ . . . n ║),
     ~w(║ . █ █ . . . █ █ █ . █ . █ █ █ . . . █ █ . ║),
-    ~w(║ . . . . █ . █ █ . . . . . █ █ . █ . . . . ║),
+    ~w(║ . . 2 . █ . █ █ . . 2 . . █ █ . █ . 2 . . ║),
     ~w(║ █ █ . █ █ . . . . █ . █ . . . . █ █ . █ █ ║),
     ~w(║ █ . . . █ █ █ . █ █ . █ █ . █ █ █ . . . █ ║),
-    ~w(║ █ . █ . . . . . █ . . . █ . . . . . █ . █ ║),
-    ~w(║ █ . . . █ . █ . . . █ . . . █ . █ . . . █ ║),
+    ~w(║ █ . █ . . e . . █ . . . █ . . e . . █ . █ ║),
+    ~w(║ █ 3 . . █ . █ . . . █ . . . █ . █ . . 3 █ ║),
     ~w(║ █ . █ █ █ . █ █ █ . █ . █ █ █ . █ █ █ . █ ║),
-    ~w(║ . . . █ . . . █ . . . . . █ . . . █ . . . ║),
+    ~w(║ . . . █ . . . █ 3 . . . 3 █ . . . █ . . . ║),
     ~w(║ . █ . █ . █ . . . █ . █ . . . █ . █ . █ . ║),
-    ~w(║ . . . . . █ . █ . . . . . █ . █ . . . . . ║),
+    ~w(║ s . 2 . . █ . █ . . 5 . . █ . █ . . 2 . s ║),
     ~w(║ . █ . █ . █ . . . █ . █ . . . █ . █ . █ . ║),
-    ~w(║ . . . █ . . . █ . . . . . █ . . . █ . . . ║),
+    ~w(║ . . . █ . . . █ 3 . . . 3 █ . . . █ . . . ║),
     ~w(║ █ . █ █ █ . █ █ █ . █ . █ █ █ . █ █ █ . █ ║),
-    ~w(║ █ . . . █ . █ . . . █ . . . █ . █ . . . █ ║),
-    ~w(║ █ . █ . . . . . █ . . . █ . . . . . █ . █ ║),
+    ~w(║ █ 3 . . █ . █ . . . █ . . . █ . █ . . 3 █ ║),
+    ~w(║ █ . █ . . e . . █ . a . █ . . e . . █ . █ ║),
     ~w(║ █ . . . █ █ █ . █ █ . █ █ . █ █ █ . . . █ ║),
     ~w(║ █ █ . █ █ . . . . █ . █ . . . . █ █ . █ █ ║),
-    ~w(║ . . . . █ . █ █ . . . . . █ █ . █ . . . . ║),
+    ~w(║ . . 2 . █ . █ █ . . . . . █ █ . █ . 2 . . ║),
     ~w(║ . █ █ . . . █ █ █ . █ . █ █ █ . . . █ █ . ║),
-    ~w(║ t i l e █ . . . . . █ . . . . . █ t i l e ║),
+    ~w(║ n . . . █ 3 . . . . █ . . . . 3 █ . . . n ║),
     ~w(╚ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ╝)
   ]
 
@@ -62,8 +64,13 @@ defmodule WordMaze.Gameplay.GameInitializer do
               {x_idx + 1, Map.put(acc, {x_idx, y_idx}, wall(x_idx, y_idx))}
             ".", {x_idx, acc} ->
               {x_idx + 1, Map.put(acc, {x_idx, y_idx}, path(x_idx, y_idx))}
-            letter, {x_idx, acc} ->
-              {x_idx + 1, Map.put(acc, {x_idx, y_idx}, letter_path(x_idx, y_idx, letter))}
+            value, {x_idx, acc} ->
+              case Enum.member?(@alphabet, value) do
+                true  -> {x_idx + 1, Map.put(acc, {x_idx, y_idx}, letter_path(x_idx, y_idx, value))}
+                false ->
+                  { number, _ } = Integer.parse(value)
+                  {x_idx + 1, Map.put(acc, {x_idx, y_idx}, number_path(x_idx, y_idx, number))}
+              end
           end)
         {y_idx + 1, row_spaces}
       end)
@@ -80,31 +87,35 @@ defmodule WordMaze.Gameplay.GameInitializer do
   end
 
   defp border_tr(x, y) do
-    %{open: false, letter: nil, x: x, y: y, class: "border_tr"}
+    %{open: false, letter: nil, x: x, y: y, class: "border_tr", multiplier: 1}
   end
 
   defp border_v(x, y) do
-    %{open: false, letter: nil, x: x, y: y, class: "border_v"}
+    %{open: false, letter: nil, x: x, y: y, class: "border_v", multiplier: 1}
   end
 
   defp border_br(x, y) do
-    %{open: false, letter: nil, x: x, y: y, class: "border_br"}
+    %{open: false, letter: nil, x: x, y: y, class: "border_br", multiplier: 1}
   end
 
   defp border_bl(x, y) do
-    %{open: false, letter: nil, x: x, y: y, class: "border_bl"}
+    %{open: false, letter: nil, x: x, y: y, class: "border_bl", multiplier: 1}
   end
 
   defp path(x, y) do
-    %{open: true, letter: nil, x: x, y: y, class: "path"}
+    %{open: true, letter: nil, x: x, y: y, class: "path", multiplier: 1}
   end
 
   defp letter_path(x, y, letter) do
-    %{open: true, letter: letter, x: x, y: y, class: "path"}
+    %{open: true, letter: letter, x: x, y: y, class: "path", multiplier: 1}
   end
 
   defp wall(x, y) do
-    %{open: false, letter: nil, x: x, y: y, class: "wall"}
+    %{open: false, letter: nil, x: x, y: y, class: "wall", multiplier: 1}
+  end
+
+  defp number_path(x, y, number) do
+    %{open: true, letter: nil, x: x, y: y, class: "path", multiplier: number}
   end
 
 end

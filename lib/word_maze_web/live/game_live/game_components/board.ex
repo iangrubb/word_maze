@@ -8,8 +8,12 @@ defmodule Board do
     ~L"""
     <div id="game-board" style="<%= screen_scroll( @players[@player_id].location ) %>">
 
-      <%= for { _ , %{x: x, y: y, class: class, letter: letter} } <- @spaces do %>
+      <%= for { _ , %{x: x, y: y, class: class, letter: letter, multiplier: multiplier} } <- @spaces do %>
         <div class="<%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;">
+
+          <%= if multiplier > 1 do %>
+            <div style="position: absolute;"><%= multiplier %></div>
+          <% end %>
 
           <%= if letter do %>
             <%= live_component @socket, BoardLetter, letter: letter %>
