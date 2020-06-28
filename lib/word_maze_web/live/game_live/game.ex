@@ -31,6 +31,7 @@ defmodule WordMazeWeb.GameLive.Game do
     <%= if @connected do %>
 
       <div id="game-screen" phx-window-keydown="keydown" phx-throttle="100">
+        <div id="screen-border"></div>
         <%= live_component @socket, Board,
           spaces: @spaces,
           viewed_spaces: @viewed_spaces,
@@ -41,15 +42,15 @@ defmodule WordMazeWeb.GameLive.Game do
         %>
       </div>
 
-      <div id="game-letters">
+      <div class="ui-box" id="game-messages"></div>
+
+      <div class="ui-box" id="game-letters">
         <%= for {{letter, location}, position} <- Enum.with_index(@hand) do %>
           <%= live_component @socket, HandLetter, location: location, letter: letter, position: position %>
         <% end %>
       </div>
 
-      <div id="game-controls"></div>
-
-      <div id="game-scores">
+      <div class="ui-box" id="game-scores">
         <%= for {_id, player} <- @players do %>
           <div style="color: <%= player.color %>"><%= player.score %></div>
         <% end %>

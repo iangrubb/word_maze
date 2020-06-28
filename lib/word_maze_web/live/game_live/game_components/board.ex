@@ -9,10 +9,10 @@ defmodule Board do
     <div id="game-board" style="<%= screen_scroll( @players[@player_id].location ) %>">
 
       <%= for { _ , %{x: x, y: y, class: class, letter: letter, multiplier: multiplier} } <- @spaces do %>
-        <div class="<%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;">
+        <div class="tile <%= class %>" style="grid-area:<%= y + 1 %>/<%= x + 1 %>/<%= y + 2 %>/<%= x + 2 %>;">
 
           <%= if multiplier > 1 do %>
-            <div style="position: absolute;"><%= multiplier %></div>
+            <div class="multiplier"><%= multiplier %>x</div>
           <% end %>
 
           <%= if letter do %>

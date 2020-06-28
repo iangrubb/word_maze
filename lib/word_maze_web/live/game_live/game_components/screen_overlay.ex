@@ -12,7 +12,7 @@ defmodule ScreenOverlay do
         <div class="revealed-space" style="<%= place_tile(address) %>">
 
           <%= if @spaces[address].multiplier > 1 do %>
-            <div style="position: absolute;"><%= @spaces[address].multiplier %></div>
+            <div class="multiplier"><%= @spaces[address].multiplier %>x</div>
           <% end %>
 
           <%= if Enum.member?(@viewed_letters, address) do %>

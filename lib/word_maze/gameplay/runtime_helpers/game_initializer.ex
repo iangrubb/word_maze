@@ -79,11 +79,11 @@ defmodule WordMaze.Gameplay.GameInitializer do
   end
 
   defp border_tl(x, y) do
-    %{open: false, letter: nil, x: x, y: y, class: "border_tl"}
+    %{open: false, letter: nil, x: x, y: y, class: "border_tl", multiplier: 1}
   end
 
   defp border_h(x, y) do
-    %{open: false, letter: nil, x: x, y: y, class: "border_h"}
+    %{open: false, letter: nil, x: x, y: y, class: "border_h", multiplier: 1}
   end
 
   defp border_tr(x, y) do

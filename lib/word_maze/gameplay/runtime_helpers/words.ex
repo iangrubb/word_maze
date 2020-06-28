@@ -34,18 +34,15 @@ defmodule WordMaze.Gameplay.Words do
           nil -> 1
           _   -> spaces[location].multiplier
         end
-      IO.puts Letters.scores()[letter] * multiplier
       (Letters.scores()[letter] * multiplier ) + acc
     end)
   end
 
   def submissions_score(submissions, spaces) do
-
     submissions
     |> Enum.reduce(0, fn (submission, acc) ->
       word_score(submission, spaces) + acc
     end)
-
   end
 
 
@@ -65,9 +62,7 @@ defmodule WordMaze.Gameplay.Words do
         {:ok, letter} -> Map.put(acc, loc, %{ space | letter: letter })
       end
     end)
-
   end
-
 
   def letters_used_by_submissions(submissions) do
 
@@ -82,7 +77,6 @@ defmodule WordMaze.Gameplay.Words do
 
   end
 
-
   def player_after_submission(player, letters_used, added_score) do
 
     player
@@ -90,6 +84,5 @@ defmodule WordMaze.Gameplay.Words do
     |> Map.put(:score, player.score + added_score)
 
   end
-
 
 end
