@@ -35,7 +35,7 @@ body{
   padding: 10px;
 
   display: grid;
-  grid-template-rows: 200px calc(70vh - 200px) 100px;
+  grid-template-rows: 320px calc(70vh - 320px) 100px;
   grid-template-columns: 200px 70vh;
   gap: 16px;
 
@@ -90,6 +90,7 @@ body{
   grid-area: scores;
 
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 
@@ -327,6 +328,58 @@ body{
   background: rgb(173, 166, 155);
   border: 4px solid rgb(146, 139, 128);
   border-radius: 8px;
+}
+
+.player-score {
+
+  margin: 4px 0;
+  padding: 4px;
+
+  width: 90%;
+  background: rgb(112, 104, 90);
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.player-name {
+ 
+  color: rgb(173, 166, 155);
+  margin: 0;
+  padding: 0;
+
+  font-size: 20px;
+  font-weight: 700;
+  
+}
+
+.score-region {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.score {
+  width: 20%;
+  text-align: center;
+  background: rgb(173, 166, 155);
+
+  font-size: 16px;
+  font-weight: 700;
+
+  border-radius: 4px;
+}
+
+.score-bar {
+  width: 70%;
+  height: 16px;
+  background: rgb(173, 166, 155);
+  border-radius: 2px;
+
+  position: relative;
 }
 
 

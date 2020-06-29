@@ -52,7 +52,7 @@ defmodule WordMazeWeb.GameLive.Game do
 
       <div class="ui-box" id="game-scores">
         <%= for {_id, player} <- @players do %>
-          <div style="color: <%= player.color %>"><%= player.score %></div>
+          <%= live_component @socket, PlayerScore, player: player %>
         <% end %>
       </div>
 
@@ -160,7 +160,6 @@ defmodule WordMazeWeb.GameLive.Game do
   }, socket) do
 
 
-
     # Update player hands when a new word occupies a space with a current tentative letter.
 
 
@@ -179,7 +178,7 @@ defmodule WordMazeWeb.GameLive.Game do
 
     player = players[submitting_player_id]
 
-    updated_players = Map.put(players, player_id, %{ player | score: new_score} )
+    updated_players = Map.put(players, submitting_player_id, %{ player | score: new_score} )
 
     base_update = %{spaces: new_spaces, viewed_letters: updated_viewed_letters, players: updated_players}
     update =
