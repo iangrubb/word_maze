@@ -191,7 +191,20 @@ defmodule WordMazeWeb.GameLive.Game do
             |> Enum.map(fn {value, _} -> value end)
 
           Map.put(base_update, :hand, filtered_hand)
-        false -> base_update
+        false ->
+
+          new_hand = Enum.map(hand, fn {let, loc} ->
+            case loc do
+              nil -> {let, nil}
+              _   ->
+                case new_spaces[loc].letter do
+                  nil -> {let, loc}
+                  _   -> {let, nil}
+                end
+            end
+          end)
+
+          Map.put(base_update, :hand, new_hand)
       end
 
     {:noreply, assign(socket, update)}
@@ -213,7 +226,6 @@ defmodule WordMazeWeb.GameLive.Game do
       true  -> {:noreply, assign(socket, :hand, Enum.concat(socket.assigns.hand, [Letters.add_to_hand(letter)]))}
       false -> {:noreply, socket}
     end
-
 
   end
 
