@@ -99,6 +99,13 @@ defmodule WordMazeWeb.GameLive.Game do
     { :noreply, assign(socket, update) }
   end
 
+  def handle_event("discard-letter", %{"position" => position}, socket) do
+
+    IO.puts "Let's discard"
+
+    {:noreply, socket}
+
+  end
 
 
   # Message Handlers

@@ -250,8 +250,6 @@ body{
   width: 52px;
   height: 52px;
 
-  max-width: 12%;
-
   cursor: pointer;
   
 }
@@ -400,3 +398,36 @@ body{
 }
 
 
+.hand-letter-region {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+}
+
+.discard-button {
+  position: absolute;
+
+  cursor: pointer;
+
+  width: 26px;
+  height: 26px;
+  z-index: 2;
+
+  background: red;
+  border: 2px solid white;
+  border-radius: 50%;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+
+  box-shadow: 2px 2px 2px rgba(20, 20, 19, 0.726);
+
+  top: 5%;
+  left: 5%;
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
