@@ -65,11 +65,11 @@ defmodule WordMaze.Gameplay.Letters do
     Map.put(players, player_id, updated_player)
   end
 
-  def schedule_new_letter(player_id) do
+  def schedule_new_letter(player_id, time, chain_count) do
     pid = self()
     spawn(fn ->
-      :timer.sleep(1000)
-      send(pid, {:new_letter, player_id})
+      :timer.sleep(time)
+      send(pid, {:new_letter, player_id, chain_count})
     end)
   end
 

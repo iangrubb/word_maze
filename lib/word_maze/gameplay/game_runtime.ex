@@ -54,13 +54,13 @@ defmodule WordMaze.Gameplay.GameRuntime do
       end
   end
 
-  def handle_info({:new_letter, player_id}, state) do
+  def handle_info({:new_letter, player_id, letters_after}, state) do
 
     %{players: players, game_id: game_id} = state
 
-    if Enum.count(players[player_id].letters) < 7 do
+    if letters_after > 0 do
       new_players = Letters.give_letter(players, player_id, game_id)
-      Letters.schedule_new_letter(player_id)
+      Letters.schedule_new_letter(player_id, 1000, letters_after - 1)
       {:noreply, %{ state | players: new_players}}
     else
       {:noreply, state}
@@ -89,7 +89,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
         added_score = Words.submissions_score(submissions, state.spaces)
         updated_player = Words.player_after_submission( state.players[player_id], letters_used, added_score )
 
-        Letters.schedule_new_letter(player_id)
+        Letters.schedule_new_letter(player_id, 1000, Enum.count(letters_used))
 
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:submission_success",
@@ -106,6 +106,17 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
         {:noreply, state}
     end
+  end
+
+  def handle_info(%{event: "client:discard", payload: %{player_id: player_id, letter: letter}}, state) do
+
+    player = state.players[player_id]
+
+    updated_player = Map.put(player, :letters, List.delete(player.letters, letter))
+
+    Letters.schedule_new_letter(player_id, 3000, 1)
+
+    {:noreply, %{ state | players: Map.put(state.players, player_id, updated_player)}}
   end
 
 

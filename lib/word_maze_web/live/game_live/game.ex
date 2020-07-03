@@ -101,9 +101,15 @@ defmodule WordMazeWeb.GameLive.Game do
 
   def handle_event("discard-letter", %{"position" => position}, socket) do
 
-    IO.puts "Let's discard"
 
-    {:noreply, socket}
+    {{letter, _} , new_hand} = List.pop_at(socket.assigns.hand, String.to_integer(position))
+
+    WordMazeWeb.Endpoint.broadcast(
+      "game:#{socket.assigns.game_id}", "client:discard",
+      %{player_id: socket.assigns.player_id, letter: letter}
+    )
+
+    {:noreply, assign(socket, :hand, new_hand)}
 
   end
 
