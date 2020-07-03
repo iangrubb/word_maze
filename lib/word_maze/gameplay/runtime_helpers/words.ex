@@ -8,15 +8,15 @@ defmodule WordMaze.Gameplay.Words do
 
   end
 
-  def valid_submission?(submission, spaces) do
-
-    sorted_submission = Enum.sort_by(submission, fn {_, {x, y} , _} -> x + y end)
-
-    word =
-      sorted_submission
+  def extract_word_from_submission(submission) do
+      submission
+      |> Enum.sort_by(fn {_, {x, y} , _} -> x + y end)
       |> Enum.reduce("", fn ({letter, _ , _}, acc) -> acc <> letter end)
+  end
 
-    Enum.all?(sorted_submission, fn {_, location , flag} -> flag == nil or spaces[location].letter == nil end) and Dictionary.lookup(word)
+  def valid_submission?(submission, spaces) do
+    word = extract_word_from_submission(submission)
+    Enum.all?(submission, fn {_, location , flag} -> flag == nil or spaces[location].letter == nil end) and Dictionary.lookup(word)
   end
 
   def add_submission(submission, spaces) do

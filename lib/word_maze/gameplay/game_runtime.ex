@@ -91,9 +91,16 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
         Letters.schedule_new_letter(player_id, 1000, Enum.count(letters_used))
 
+        player = state.players[player_id]
+        words =
+          submissions
+          |> Enum.map(fn sub -> Words.extract_word_from_submission(sub) end)
+          |> Enum.join(" and ")
+        message = "#{String.capitalize(player.color)} has played #{words} for #{added_score} points"
+
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:submission_success",
-          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: updated_player.score}
+          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: updated_player.score, message: message}
         )
 
         {:noreply, %{ state | spaces: new_spaces, players: Map.put(state.players, player_id, updated_player)}}

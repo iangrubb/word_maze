@@ -29,7 +29,6 @@ body{
 
 
 
-
 .game-running {
 
   padding: 10px;
@@ -67,11 +66,6 @@ body{
 }
 
 
-
-
-
-
-
 #game-letters {
   grid-area: letters;
 
@@ -82,6 +76,12 @@ body{
 
 #game-messages {
   grid-area: messages;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  overflow: scroll;
 }
 
 
@@ -430,4 +430,19 @@ body{
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.message {
+
+  width: 94%;
+  margin: 8px 0;
+  padding: 2px 8px;
+  background: rgb(219, 216, 210);
+
+  border: 2px solid rgb(146, 139, 128);
+  border-radius: 8px;
+
+  color: rgb(34, 37, 48);
+  font-size: 16px;
+  font-weight: 300;
 }

@@ -42,7 +42,11 @@ defmodule WordMazeWeb.GameLive.Game do
         %>
       </div>
 
-      <div class="ui-box" id="game-messages"></div>
+      <div class="ui-box" id="game-messages" >
+        <%= for message <- @messages do %>
+          <div class="message" ><%= message %></div>
+        <% end %>
+      </div>
 
       <div class="ui-box" id="game-letters">
         <%= for {{letter, location}, position} <- Enum.with_index(@hand) do %>
@@ -100,8 +104,6 @@ defmodule WordMazeWeb.GameLive.Game do
   end
 
   def handle_event("discard-letter", %{"position" => position}, socket) do
-
-
     {{letter, _} , new_hand} = List.pop_at(socket.assigns.hand, String.to_integer(position))
 
     WordMazeWeb.Endpoint.broadcast(
@@ -110,7 +112,6 @@ defmodule WordMazeWeb.GameLive.Game do
     )
 
     {:noreply, assign(socket, :hand, new_hand)}
-
   end
 
 
@@ -169,15 +170,10 @@ defmodule WordMazeWeb.GameLive.Game do
 
   def handle_info(%{
     event: "server:submission_success",
-    payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: new_score}
+    payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: new_score, message: message}
   }, socket) do
 
-
-    # Update player hands when a new word occupies a space with a current tentative letter.
-
-
-
-    %{player_id: player_id, players: players, spaces: spaces, hand: hand, viewed_letters: viewed_letters} = socket.assigns
+    %{player_id: player_id, players: players, spaces: spaces, hand: hand, viewed_letters: viewed_letters, messages: messages} = socket.assigns
 
     indicies = Enum.map(letters_used, fn {_ , _ , idx} -> idx end)
 
@@ -193,7 +189,7 @@ defmodule WordMazeWeb.GameLive.Game do
 
     updated_players = Map.put(players, submitting_player_id, %{ player | score: new_score} )
 
-    base_update = %{spaces: new_spaces, viewed_letters: updated_viewed_letters, players: updated_players}
+    base_update = %{spaces: new_spaces, viewed_letters: updated_viewed_letters, players: updated_players, messages: [message | messages]}
     update =
       case submitting_player_id == player_id do
         true  ->

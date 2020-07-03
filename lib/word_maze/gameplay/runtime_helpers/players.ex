@@ -41,8 +41,10 @@ defmodule WordMaze.Gameplay.Players do
       connected: true,
       hand: Letters.initialize_hand(letters),
       viewed_spaces: viewed_spaces,
-      viewed_letters: Enum.filter(viewed_spaces, fn address -> spaces[address].letter !== nil end)
+      viewed_letters: Enum.filter(viewed_spaces, fn address -> spaces[address].letter !== nil end),
+      messages: []
     }
+
   end
 
 
