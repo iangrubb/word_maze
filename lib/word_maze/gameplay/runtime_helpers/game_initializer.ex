@@ -4,6 +4,7 @@ defmodule WordMaze.Gameplay.GameInitializer do
 
     defaults = %{
       game_id: game_id,
+      duration: 300,
       players: %{},
     }
 

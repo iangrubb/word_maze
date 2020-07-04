@@ -42,6 +42,10 @@ defmodule WordMazeWeb.GameLive.Game do
         %>
       </div>
 
+      <div class="ui-box" id="game-timer">
+        <%= @duration %>
+      </div>
+
       <div class="ui-box" id="game-messages" >
         <%= for message <- @messages do %>
           <div class="message" ><%= message %></div>
@@ -238,6 +242,10 @@ defmodule WordMazeWeb.GameLive.Game do
 
   end
 
+  def handle_info(%{event: "server:timer_update", payload: %{duration: duration}}, socket) do
+
+    {:noreply, assign(socket, :duration, duration)}
+  end
 
 
 
