@@ -43,7 +43,7 @@ defmodule WordMazeWeb.GameLive.Game do
       </div>
 
       <div class="ui-box" id="game-timer">
-        <%= @duration %>
+        <%= format_timer(@duration) %>
       </div>
 
       <div class="ui-box" id="game-messages" >
@@ -66,6 +66,22 @@ defmodule WordMazeWeb.GameLive.Game do
 
     <% end %>
     """
+  end
+
+
+  def format_timer(seconds) do
+    case seconds do
+      0 -> "DONE"
+      _ ->
+        min = div(seconds, 60)
+        sec = rem(seconds, 60)
+        format_sec =
+          case sec > 9 do
+            true -> "#{sec}"
+            false -> "0#{sec}"
+          end
+        "#{min}:#{format_sec}"
+    end
   end
 
 

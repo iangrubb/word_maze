@@ -104,6 +104,12 @@ body{
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  color: rgb(46, 42, 35);
+  font-size: 32px;
+  font-weight: 700;
+
+
 }
 
 

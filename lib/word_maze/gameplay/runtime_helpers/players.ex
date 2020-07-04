@@ -26,13 +26,14 @@ defmodule WordMaze.Gameplay.Players do
       players: Enum.reduce(state.players, %{}, fn ({player_id, data}, acc) ->
         Map.put(acc, player_id, %{ score: data.score, color: data.color, location: data.location})
       end ),
-      duration: state.duration
+      duration: state.duration,
+      status: state.status
     }
   end
 
   def initialize_local_state(game_id, player_id, game_state) do
 
-    %{letters: letters, spaces: spaces, players: players, duration: duration} = game_state
+    %{letters: letters, spaces: spaces, players: players, duration: duration, status: status} = game_state
 
     viewed_spaces = Visibility.visible_spaces(spaces, players[player_id].location)
 
@@ -41,6 +42,7 @@ defmodule WordMaze.Gameplay.Players do
       player_id: player_id,
       connected: true,
       duration: duration,
+      status: status,
       hand: Letters.initialize_hand(letters),
       viewed_spaces: viewed_spaces,
       viewed_letters: Enum.filter(viewed_spaces, fn address -> spaces[address].letter !== nil end),

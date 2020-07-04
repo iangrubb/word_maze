@@ -25,8 +25,9 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def init(game_id) do
     WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
     IO.puts "Starting #{game_id}"
-    GameTimer.start_link(self(), 300)
-    {:ok, GameInitializer.new_game_state(game_id)}
+    duration = 60
+    GameTimer.start_link(self(), duration)
+    {:ok, GameInitializer.new_game_state(game_id, duration)}
   end
 
   def handle_call(:get_pid, _from, state) do

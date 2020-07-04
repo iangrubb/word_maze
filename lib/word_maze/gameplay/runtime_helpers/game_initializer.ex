@@ -1,11 +1,12 @@
 defmodule WordMaze.Gameplay.GameInitializer do
 
-  def new_game_state(game_id) do
+  def new_game_state(game_id, duration) do
 
     defaults = %{
       game_id: game_id,
-      duration: 300,
+      duration: duration,
       players: %{},
+      status: :running
     }
 
     defaults
