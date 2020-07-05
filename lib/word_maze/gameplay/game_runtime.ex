@@ -25,7 +25,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def init(game_id) do
     WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
     IO.puts "Starting #{game_id}"
-    duration = 60
+    duration = 10
     GameTimer.start_link(self(), duration)
     {:ok, GameInitializer.new_game_state(game_id, duration)}
   end
@@ -72,11 +72,20 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   def handle_info({:timer_tick, duration} , state) do
 
-    WordMazeWeb.Endpoint.broadcast(
+    case duration do
+      0 ->
+        WordMazeWeb.Endpoint.broadcast(
+        "game:#{state.game_id}", "server:game_complete",
+        %{}
+        )
+        {:noreply, %{state | duration: duration, status: :complete}}
+      _ ->
+        WordMazeWeb.Endpoint.broadcast(
         "game:#{state.game_id}", "server:timer_update",
         %{duration: duration}
-      )
-    {:noreply, %{state | duration: duration}}
+        )
+        {:noreply, %{state | duration: duration}}
+    end
   end
 
 
