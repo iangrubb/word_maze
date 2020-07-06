@@ -5,7 +5,8 @@ defmodule RunningGame do
 
   def render(assigns) do
     ~L"""
-    <div id="game-screen" phx-window-keydown="keydown" phx-throttle="100">
+    <div class="game-running" >
+      <div id="game-screen" phx-window-keydown="keydown" phx-throttle="100">
         <div id="screen-border"></div>
         <%= live_component @socket, Board,
           spaces: @spaces,
@@ -38,6 +39,7 @@ defmodule RunningGame do
           <%= live_component @socket, PlayerScore, player: player %>
         <% end %>
       </div>
+    </div>
     """
   end
 

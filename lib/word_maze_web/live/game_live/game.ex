@@ -8,12 +8,13 @@ defmodule WordMazeWeb.GameLive.Game do
 
   @impl true
   def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
+    pre_connection_state = %{connected: false, status: :staging}
     if connected?(socket) do
       WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
       case RuntimeMonitor.new_connection(self(), player_id, game_id) do
         :full ->
           WordMazeWeb.Endpoint.unsubscribe("game:#{game_id}")
-          {:ok, assign(socket, :connected, false)}
+          {:ok,  assign(socket, pre_connection_state)}
         game_state ->
           new_socket =
             socket
@@ -22,23 +23,31 @@ defmodule WordMazeWeb.GameLive.Game do
           {:ok, new_socket}
       end
     else
-      {:ok, assign(socket, :connected, false)}
+      {:ok, assign(socket, pre_connection_state)}
     end
   end
 
   def render(assigns) do
     ~L"""
-    <%= if @connected and @status == :running do %>
-      <%= live_component @socket, RunningGame,
-        spaces: @spaces,
-        viewed_spaces: @viewed_spaces,
-        viewed_letters: @viewed_letters,
-        players: @players,
-        player_id: @player_id,
-        hand: @hand,
-        duration: @duration,
-        messages: @messages
-      %>
+    <%= case { @connected, @status } do %>
+      <%= { false, _ } -> %>
+        <%= nil %>
+      <%= { true, :running } -> %>
+        <%= live_component @socket, RunningGame,
+          spaces: @spaces,
+          viewed_spaces: @viewed_spaces,
+          viewed_letters: @viewed_letters,
+          players: @players,
+          player_id: @player_id,
+          hand: @hand,
+          duration: @duration,
+          messages: @messages
+        %>
+      <%= { true, :complete } -> %>
+        <%= live_component @socket, EndGame,
+          players: @players,
+          player_id: @player_id
+        %>
     <% end %>
     """
   end
