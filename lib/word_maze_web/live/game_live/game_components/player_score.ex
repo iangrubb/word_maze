@@ -26,7 +26,7 @@ defmodule PlayerScore do
     top: 0;
     bottom: 0;
     left: 0;
-    right: #{100 - (player.score / 2) }%;
+    right: #{100 - (player.score / 1.5) }%;
     background: #{player.color};
     transition: right 0.2s ease;
     border-radius: 2px 0 0 2px;

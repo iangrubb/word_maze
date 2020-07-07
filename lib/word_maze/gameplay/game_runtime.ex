@@ -118,12 +118,14 @@ defmodule WordMaze.Gameplay.GameRuntime do
           |> Enum.join(" and ")
         message = "#{String.capitalize(player.color)} has played #{words} for #{added_score} points"
 
+        game_status = if updated_player.score >= 150, do: :complete, else: :running
+
         WordMazeWeb.Endpoint.broadcast(
           "game:#{state.game_id}", "server:submission_success",
-          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: updated_player.score, message: message}
+          %{player_id: player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: updated_player.score, message: message, game_status: game_status}
         )
 
-        {:noreply, %{ state | spaces: new_spaces, players: Map.put(state.players, player_id, updated_player)}}
+        {:noreply, %{ state | spaces: new_spaces, players: Map.put(state.players, player_id, updated_player), status: game_status}}
       false ->
 
         WordMazeWeb.Endpoint.broadcast(

@@ -157,7 +157,7 @@ defmodule WordMazeWeb.GameLive.Game do
 
   def handle_info(%{
     event: "server:submission_success",
-    payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: new_score, message: message}
+    payload: %{player_id: submitting_player_id, new_spaces: new_spaces, letters_used: letters_used, new_score: new_score, message: message, game_status: game_status}
   }, socket) do
 
     %{player_id: player_id, players: players, spaces: spaces, hand: hand, viewed_letters: viewed_letters, messages: messages} = socket.assigns
@@ -176,7 +176,8 @@ defmodule WordMazeWeb.GameLive.Game do
 
     updated_players = Map.put(players, submitting_player_id, %{ player | score: new_score} )
 
-    base_update = %{spaces: new_spaces, viewed_letters: updated_viewed_letters, players: updated_players, messages: [message | messages]}
+
+    base_update = %{spaces: new_spaces, viewed_letters: updated_viewed_letters, players: updated_players, messages: [message | messages], status: game_status}
     update =
       case submitting_player_id == player_id do
         true  ->
