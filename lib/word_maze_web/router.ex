@@ -18,8 +18,8 @@ defmodule WordMazeWeb.Router do
     pipe_through :browser
 
     resources "/games", GameController, only: [:index, :show]
+    get "/", GameController, :landing
 
-    live "/", PageLive, :index
   end
 
   # Other scopes may use custom stacks.
