@@ -17,8 +17,9 @@ defmodule WordMazeWeb.Router do
   scope "/", WordMazeWeb do
     pipe_through :browser
 
-    resources "/games", GameController, only: [:index, :show]
-    get "/", GameController, :landing
+    resources "/games", GameController, only: [:index, :show, :create]
+    resources "/users", UserController, only: [:create]
+    get "/", UserController, :new
 
   end
 

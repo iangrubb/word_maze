@@ -12,6 +12,18 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   ## Game Setup Utilities
 
+  def initialize_player_state(pid, player_id) do
+    GenServer.call(pid, {:initialize_player_state, player_id})
+  end
+
+  def get_player_state(pid, player_id) do
+    GenServer.call(pid, {:get_player_state, player_id})
+  end
+
+
+
+
+
   def attempt_player_join(pid, player_id) do
     GenServer.call(pid, {:attempt_player_join, player_id})
   end
@@ -24,7 +36,6 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   def init(game_id) do
     WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
-    IO.puts "Starting #{game_id}"
     duration = 10
     GameTimer.start_link(self(), duration)
     {:ok, GameInitializer.new_game_state(game_id, duration)}
@@ -33,6 +44,45 @@ defmodule WordMaze.Gameplay.GameRuntime do
   def handle_call(:get_pid, _from, state) do
     {:reply, self(), state}
   end
+
+
+
+  # Write ways to set and get player state in runtime
+
+  def handle_call({:initialize_player_state, player_id}, _ , state) do
+
+    new_state = Players.initialize(state, player_id)
+    player_state = Players.get_state(new_state, player_id)
+    new_player_data = player_state.players[player_id]
+    IO.puts "NEW JOINS"
+    WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_player", %{player: new_player_data, player_id: player_id})
+    {:reply, player_state, new_state}
+
+
+    {:reply, :ok,  new_state}
+  end
+
+  def handle_call({:get_player_state, player_id}, _ , state) do
+
+    new_state = Players.initialize(state, player_id)
+    player_state = Players.get_state(new_state, player_id)
+    new_player_data = player_state.players[player_id]
+    IO.puts "NEW JOINS"
+    WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_player", %{player: new_player_data, player_id: player_id})
+    {:reply, player_state, new_state}
+
+
+    game_state = "beef"
+
+    {:reply, game_state, state}
+  end
+
+
+
+
+
+
+
 
   def handle_call({:attempt_player_join, player_id}, _from, state) do
       cond do
