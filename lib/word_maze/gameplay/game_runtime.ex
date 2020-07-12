@@ -5,16 +5,12 @@ defmodule WordMaze.Gameplay.GameRuntime do
   use GenServer
 
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts[:game_id] , opts)
+    GenServer.start_link(__MODULE__, opts , opts)
   end
 
   # Runtime API
 
   ## Game Setup Utilities
-
-  def initialize_player_state(pid, player_id) do
-    GenServer.call(pid, {:initialize_player_state, player_id})
-  end
 
   def get_player_state(pid, player_id) do
     GenServer.call(pid, {:get_player_state, player_id})
@@ -23,22 +19,18 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
 
 
-
-  def attempt_player_join(pid, player_id) do
-    GenServer.call(pid, {:attempt_player_join, player_id})
-  end
-
   def get_pid(pid) do
     GenServer.call(pid, :get_pid)
   end
 
   # Runtime Callbacks
 
-  def init(game_id) do
+  def init(opts) do
+    game_id = opts[:game_id]
     WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
     duration = 10
-    GameTimer.start_link(self(), duration)
-    {:ok, GameInitializer.new_game_state(game_id, duration)}
+    GameTimer.start_link(self(), 245)
+    {:ok, GameInitializer.new_game_state(game_id, opts[:users])}
   end
 
   def handle_call(:get_pid, _from, state) do
@@ -49,62 +41,14 @@ defmodule WordMaze.Gameplay.GameRuntime do
 
   # Write ways to set and get player state in runtime
 
-  def handle_call({:initialize_player_state, player_id}, _ , state) do
-
-    new_state = Players.initialize(state, player_id)
-    player_state = Players.get_state(new_state, player_id)
-    new_player_data = player_state.players[player_id]
-    IO.puts "NEW JOINS"
-    WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_player", %{player: new_player_data, player_id: player_id})
-    {:reply, player_state, new_state}
-
-
-    {:reply, :ok,  new_state}
-  end
 
   def handle_call({:get_player_state, player_id}, _ , state) do
-
-    new_state = Players.initialize(state, player_id)
-    player_state = Players.get_state(new_state, player_id)
-    new_player_data = player_state.players[player_id]
-    IO.puts "NEW JOINS"
-    WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_player", %{player: new_player_data, player_id: player_id})
-    {:reply, player_state, new_state}
-
-
-    game_state = "beef"
-
-    {:reply, game_state, state}
+    {:reply, Players.get_state(state, player_id), state}
   end
 
 
 
 
-
-
-
-
-  def handle_call({:attempt_player_join, player_id}, _from, state) do
-      cond do
-        Enum.count(state.players, fn {id, _} -> id == player_id  end) > 0 ->
-          # Old player is rejoining
-          player_state = Players.get_state(state, player_id)
-          IO.puts "OLD RETURNS"
-          {:reply, player_state, state}
-        Enum.count(state.players) < 4 ->
-          # New player has space to be added
-          new_state = Players.initialize(state, player_id)
-          player_state = Players.get_state(new_state, player_id)
-          new_player_data = player_state.players[player_id]
-          IO.puts "NEW JOINS"
-          WordMazeWeb.Endpoint.broadcast("game:#{state.game_id}", "server:new_player", %{player: new_player_data, player_id: player_id})
-          {:reply, player_state, new_state}
-        true ->
-          # New player has no space and can't join
-          IO.puts "New Denied"
-          {:reply, :full, state}
-      end
-  end
 
   def handle_info({:new_letter, player_id, letters_after}, state) do
 
@@ -117,12 +61,16 @@ defmodule WordMaze.Gameplay.GameRuntime do
     else
       {:noreply, state}
     end
-
   end
 
   def handle_info({:timer_tick, duration} , state) do
-
     case duration do
+      240 ->
+        WordMazeWeb.Endpoint.broadcast(
+        "game:#{state.game_id}", "server:game_start",
+        %{duration: duration}
+        )
+        {:noreply, %{state | duration: duration, status: :running}}
       0 ->
         WordMazeWeb.Endpoint.broadcast(
         "game:#{state.game_id}", "server:game_complete",
@@ -137,6 +85,8 @@ defmodule WordMaze.Gameplay.GameRuntime do
         {:noreply, %{state | duration: duration}}
     end
   end
+
+
 
 
   # Socket Messages

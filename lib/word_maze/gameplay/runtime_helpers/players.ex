@@ -2,10 +2,11 @@ defmodule WordMaze.Gameplay.Players do
 
   alias WordMaze.Gameplay.{ Letters, Visibility }
 
-  def initialize(state, player_id) do
+  def initialize(state, player) do
 
     defaults = %{
       score: 0,
+      name: player.name
     }
 
     player_state =
@@ -14,7 +15,7 @@ defmodule WordMaze.Gameplay.Players do
       |> set_color(Enum.count(state.players))
       |> set_initial_letters()
 
-    %{state | players: Map.put(state.players, player_id, player_state)}
+    %{state | players: Map.put(state.players, player.id, player_state)}
   end
 
   def get_state(state, player_id) do
@@ -24,7 +25,7 @@ defmodule WordMaze.Gameplay.Players do
       spaces: state.spaces,
       letters: player_data.letters,
       players: Enum.reduce(state.players, %{}, fn ({player_id, data}, acc) ->
-        Map.put(acc, player_id, %{ score: data.score, color: data.color, location: data.location})
+        Map.put(acc, player_id, %{ score: data.score, color: data.color, location: data.location, name: data.name})
       end ),
       duration: state.duration,
       status: state.status
@@ -50,7 +51,6 @@ defmodule WordMaze.Gameplay.Players do
     }
 
   end
-
 
 
 

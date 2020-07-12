@@ -13,26 +13,20 @@ defmodule WordMazeWeb.GameController do
 
   def show(conn, %{"id" => game_id}) do
 
-    # ADD IN REDIRECT CASES
-
     game_id = String.to_integer(game_id)
-    user = get_session(conn, :user)
 
-    case RuntimeMonitor.validate_connection(user.id, game_id) do
-      :ok ->
-        live_render(conn, WordMazeWeb.GameLive.Game, session: %{"game_id" => game_id, "user" => user})
-      {:error, reason} ->
-        redirect(conn, to: Routes.game_path(conn, :index))
+    case get_session(conn, :user) do
+      nil ->
+        redirect(conn, to: Routes.user_path(conn, :new))
+      user ->
+        case RuntimeMonitor.validate_connection(user.id, game_id) do
+          :ok ->
+            live_render(conn, WordMazeWeb.GameLive.Game, session: %{"game_id" => game_id, "player_id" => user.id})
+          {:error, reason} ->
+            redirect(conn, to: Routes.game_path(conn, :index))
+        end
     end
   end
 
-  def create(conn, _params) do
-
-    user_id = get_session(conn, :user).id
-    game_id = RuntimeMonitor.new_game(user_id)
-
-    redirect(conn, to: Routes.game_path(conn, :show, game_id))
-
-  end
 
 end

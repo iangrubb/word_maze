@@ -1,18 +1,24 @@
 defmodule WordMaze.Gameplay.GameInitializer do
 
-  def new_game_state(game_id, duration) do
+  alias WordMaze.Gameplay.Players
+
+  def new_game_state(game_id, users) do
+
+    IO.inspect users
 
     defaults = %{
       game_id: game_id,
-      duration: duration,
+      duration: 245,
       players: %{},
-      status: :running
+      status: :announcing
     }
 
-    defaults
+    Enum.reduce(users, defaults, fn user, state -> Players.initialize(state, user) end)
     |> build_board()
 
   end
+
+
 
   @alphabet ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 

@@ -27,15 +27,11 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
     GenServer.call(__MODULE__, {:validate_connection, user_id, game_id})
   end
 
+  def find_runtime(game_id) do
+    GenServer.call(__MODULE__, {:find_runtime, game_id})
+  end
 
 
-
-  # START GAME code
-
-  # DynamicSupervisor.start_child(
-  #   WordMaze.GameRuntimeSupervisor,
-  #   {GameRuntime, name: runtime_name(game_id), game_id: game_id}
-  # )
 
 
 
@@ -55,10 +51,16 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
 
     new_waiting_users = waiting_users ++ [ Map.merge(user, %{view_pid: view_pid, monitor_ref: monitor_ref}) ]
 
-    case Enum.count(new_waiting_users) >= 4 do
+    case Enum.count(new_waiting_users) >= 2 do
       true ->
         game_users = Enum.map(new_waiting_users, fn u -> %{id: u.id, name: u.name} end)
         new_game = %{id: game_id, players: game_users}
+
+        DynamicSupervisor.start_child(
+          WordMaze.GameRuntimeSupervisor,
+          {GameRuntime, name: runtime_name(game_id), game_id: game_id, users: game_users}
+        )
+
         WordMazeWeb.Endpoint.broadcast("game:lobby", "game_starting", %{game_id: game_id})
         {:reply, {:game_starting, game_id}, %{ state | waiting_users: [], game_id: game_id + 1, games: Map.put(games, game_id, new_game)}}
       false ->
@@ -82,13 +84,6 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
     end
   end
 
-  defp remove_from_list_at_index(list, index) do
-    {user, new_list} = List.pop_at(list, index)
-    Process.demonitor(user.monitor_ref)
-    WordMazeWeb.Endpoint.broadcast("game:lobby", "list_update", %{waiting: new_list})
-    new_list
-  end
-
   def handle_call({:validate_connection, user_id, game_id}, _, %{games: games} = state) do
     game = games[game_id]
     cond do
@@ -104,42 +99,29 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
     end
   end
 
+  def handle_call({:find_runtime, game_id}, _, state) do
 
-
-
-
-
-
-  def handle_call({:connect_to_game_state, player_id, game_id}, _, state) do
-    game_state = GameRuntime.current_state(runtime_name(game_id), player_id)
-    {:reply, game_state, state}
   end
 
 
-
-
-
-
-
-
-  defp players_in_game(game, players) do
-    Enum.filter(players, fn player -> player.game_id === game.id end)
-  end
-
-  defp add_player_to_game(game, player, state) do
-    updated_user = %{ player | game_id: game.id}
-    %{ state | users: Map.put(state.users, updated_user.id, updated_user)}
-  end
-
-  defp guest_count(game, users) do
-    players_in_game(game, users)
-    |> Enum.filter(fn player -> player.id != game.owner_id end)
-    |> Enum.count()
-  end
 
   def runtime_name(game_id) do
     {:via, Registry, {WordMaze.GameRegistry, game_id}}
   end
+
+  defp remove_from_list_at_index(list, index) do
+    {user, new_list} = List.pop_at(list, index)
+    Process.demonitor(user.monitor_ref)
+    WordMazeWeb.Endpoint.broadcast("game:lobby", "list_update", %{waiting: new_list})
+    new_list
+  end
+
+
+
+
+
+
+
 
 
 

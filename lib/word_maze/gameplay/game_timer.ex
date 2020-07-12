@@ -15,7 +15,6 @@ defmodule WordMaze.Gameplay.GameTimer do
   end
 
   def handle_info(:tick, {parent, duration, running}) do
-
     case {duration, running} do
       {_ , false} ->
         {:noreply, {parent, duration, running}}
@@ -25,9 +24,7 @@ defmodule WordMaze.Gameplay.GameTimer do
       {_ ,true} ->
         send(parent, {:timer_tick, duration})
         {:noreply, {parent, duration - 1, running}}
-
     end
-
   end
 
   def handle_info(:pause, {parent, duration, _}) do

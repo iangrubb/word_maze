@@ -7,66 +7,35 @@ defmodule WordMazeWeb.GameLive.Game do
   @arrows ["ArrowLeft", "ArrowDown", "ArrowUp", "ArrowRight", "w", "a", "s", "d"]
 
   @impl true
-  def mount(_params, %{"game_id" => game_id, "user" => user}, socket) do
-
-    IO.inspect user
-    # Refactor to use user data, rather than player_id
+  def mount(_params, %{"game_id" => game_id, "player_id" => player_id}, socket) do
 
     case connected?(socket) do
       true ->
+        WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
 
+        game_state = GameRuntime.get_player_state({:via, Registry, {WordMaze.GameRegistry, game_id}}, player_id)
 
-        # Maybe just don't go to this compontent or the game show route until players for the game have been established.
+        new_socket =
+          socket
+          |> assign(game_state)
+          |> assign(Players.initialize_local_state(game_id, player_id, game_state))
 
-
-
-        # Get current runtime state
-          # if still staging:
-
-            # subscribe to runtime updates
-            # state presence
-            # client state should be %{ player_id, status, presence }
-
-          # if running or complete:
-
-            # submit player_id when getting game state
-              # if id doesn't match game players
-                # set live view status to denied
-              # if id does match game players
-                # set full game state
-                # add in local runtime state
-
-
-
-        # case RuntimeMonitor.validate_connection(player_id, game_id) do
-        #   :ok ->
-        #     WordMazeWeb.Endpoint.subscribe("game:#{game_id}")
-
-        #     # Maybe pass the pid through and call this conditionally if a player connects.
-        #     Presence.track(self(), "game:#{game_id}", player_id, %{data: "beef"})
-
-        #     game_state = GameRuntime.get_player_state(RuntimeMonitor.find_runtime(game_id), player_id)
-        #     new_socket =
-        #       socket
-        #       |> assign(game_state)
-        #       |> assign(Players.initialize_local_state(game_id, player_id, game_state))
-        #     {:ok, new_socket}
-        #   {:error, reason} ->
-        #     {:ok, assign(socket, %{status: :denied, denial_reason: reason})}
-        # end
-        {:ok, assign(socket, %{status: :connecting})}
-
+        {:ok, new_socket}
 
       false -> {:ok, assign(socket, %{status: :connecting})}
     end
   end
 
+  @impl true
   def render(assigns) do
     ~L"""
     <%= case @status do %>
-      <%= :connecting -> %>
+      <% :connecting -> %>
         <div>Connecting</div>
-      <%= :running -> %>
+      <% :announcing -> %>
+        <div>Game About to Start</div>
+        <div><%= @duration - 240 %></div>
+      <% :running -> %>
         <%= live_component @socket, RunningGame,
           spaces: @spaces,
           viewed_spaces: @viewed_spaces,
@@ -77,7 +46,7 @@ defmodule WordMazeWeb.GameLive.Game do
           duration: @duration,
           messages: @messages
         %>
-      <%= :complete -> %>
+      <% :complete -> %>
         <%= live_component @socket, EndGame,
           players: @players,
           player_id: @player_id
@@ -107,7 +76,7 @@ defmodule WordMazeWeb.GameLive.Game do
     {:noreply, assign(socket, updates)}
   end
 
-  def handle_event("keydown", %{"key" => key}, socket) do
+  def handle_event("keydown", %{"key" => _key}, socket) do
     {:noreply, socket}
   end
 
@@ -270,6 +239,10 @@ defmodule WordMazeWeb.GameLive.Game do
 
   def handle_info(%{event: "server:timer_update", payload: %{duration: duration}}, socket) do
     {:noreply, assign(socket, :duration, duration)}
+  end
+
+  def handle_info(%{event: "server:game_start", payload: %{duration: duration}}, socket) do
+    {:noreply, assign(socket, %{duration: duration, status: :running})}
   end
 
   def handle_info(%{event: "server:game_complete"}, socket) do
