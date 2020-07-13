@@ -8,7 +8,7 @@ defmodule WordMaze.Application do
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
-      WordMaze.Repo,
+      # WordMaze.Repo,
       # Start the Telemetry supervisor
       WordMazeWeb.Telemetry,
       # Start the PubSub system
