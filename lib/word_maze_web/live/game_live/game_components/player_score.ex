@@ -7,7 +7,7 @@ defmodule PlayerScore do
   def render(assigns) do
     ~L"""
     <div class="player-score">
-      <h3 class="player-name"><%= @player.color %></h3>
+      <h3 class="player-name"><%= @player.name %></h3>
       <div class="score-region">
         <div style="color: <%= @player.color %>" class="score"><%= @player.score %></div>
         <div class="score-bar">
@@ -35,4 +35,3 @@ defmodule PlayerScore do
 
 
 end
-

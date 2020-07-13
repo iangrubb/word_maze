@@ -7,7 +7,7 @@ defmodule EndGame do
       <div id="end-game-display">
         <h2><%= outcome_message(@players, @player_id) %></h2>
         <%= for player <- ordered_players(@players) do %>
-          <div><span><%= player.ranking %>.</span> <span><%= player.color %></span> <span><%= player.score %></span> </div>
+          <div><span><%= player.ranking %>.</span> <span><%= player.name %></span> <span><%= player.score %></span> </div>
         <% end %>
       </div>
     """
