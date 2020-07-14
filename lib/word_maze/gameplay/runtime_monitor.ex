@@ -31,6 +31,13 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
     GenServer.call(__MODULE__, {:find_runtime, game_id})
   end
 
+  def valid_session?(user) do
+    case user do
+      nil -> false
+        _ -> GenServer.call(__MODULE__, {:valid_session, user.session_key})
+    end
+  end
+
 
 
 
@@ -38,11 +45,12 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
   # Callback Functions
 
   def init(:ok) do
-    {:ok, %{games: %{}, game_id: 1, user_id: 1, waiting_users: []}}
+
+    {:ok, %{games: %{}, game_id: 1, user_id: 1, waiting_users: [], session_key: :rand.uniform(1_000_000_000)}}
   end
 
   def handle_call(:new_user, _ , %{user_id: user_id} = state) do
-    {:reply, user_id , %{ state | user_id: user_id + 1}}
+    {:reply, {user_id, state.session_key} , %{ state | user_id: user_id + 1}}
   end
 
   def handle_call({:searching, user}, {view_pid, _} , %{waiting_users: waiting_users, games: games, game_id: game_id} = state) do
@@ -99,8 +107,8 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
     end
   end
 
-  def handle_call({:find_runtime, game_id}, _, state) do
-
+  def handle_call({:valid_session, session_key}, _, state) do
+    {:reply, session_key == state.session_key , state}
   end
 
 
