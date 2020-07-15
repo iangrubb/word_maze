@@ -33,8 +33,10 @@ defmodule WordMazeWeb.GameLive.Game do
       <% :connecting -> %>
         <div>Connecting</div>
       <% :announcing -> %>
-        <div>Game About to Start</div>
-        <div><%= @duration - 240 %></div>
+        <div class="ui-box menu-ui">
+          <h3>Game About to Start</h3>
+          <h1><%= @duration - 240 %></h1>
+        </div>
       <% :running -> %>
         <%= live_component @socket, RunningGame,
           spaces: @spaces,

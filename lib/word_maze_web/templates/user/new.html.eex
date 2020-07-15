@@ -1,9 +1,10 @@
-<div class="ui-box">
+<div class="ui-box menu-ui">
 
     <h1>Word Maze</h1>
 
     <%= form_for :user, Routes.user_path(WordMazeWeb.Endpoint, :create), fn f -> %>
-        <%= text_input f, :name, value: "test" %>
+        <label>Pick a Username</label>
+        <%= text_input f, :name %>
         <%= submit "Submit" %>
     <% end %>
 

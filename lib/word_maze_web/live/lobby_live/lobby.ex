@@ -12,16 +12,24 @@ defmodule WordMazeWeb.GameLive.Lobby do
 
   def render(assigns) do
     ~L"""
-    <div class="ui-box">
+    <div class="ui-box menu-ui">
 
       <%= case @searching do %>
         <%= false -> %>
           <h2>Welcome!</h2>
-          <p>Rules go here</p>
+          <h5>Rules:</h5>
+          <ul class="menu-list">
+            <li>Move with WASD or Arrow Keys</li>
+            <li>Place a letter by standing on an empty space and clicking it in hand</li>
+            <li>Letters are submitted when a player spells a word in a row or column</li>
+            <li>Submitted words score points based on the letters used and letter score multipliers</li>
+            <li>Win by scoring 150 points or having the most points after 4 minutes</li>
+          </ul>
           <button phx-click="start-searching">Find a Game</button>
         <%= true -> %>
           <h2>Finding a game...</h2>
-          <ul>
+          <h5>Players:</h5>
+          <ul class="menu-list">
             <%= for waiting_user <- @waiting_list do %>
               <li><%= waiting_user.name %></li>
             <% end %>
