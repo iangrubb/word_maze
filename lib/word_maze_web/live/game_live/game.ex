@@ -31,7 +31,7 @@ defmodule WordMazeWeb.GameLive.Game do
     ~L"""
     <%= case @status do %>
       <% :connecting -> %>
-        <div>Connecting</div>
+        <div class="ui-box menu-ui">Connecting...</div>
       <% :announcing -> %>
         <div class="ui-box menu-ui">
           <h3>Game About to Start</h3>
