@@ -5,6 +5,8 @@ defmodule WordMazeWeb.UserController do
 
   def new(conn, _params) do
 
+    IO.puts get_session(conn, :user).beef
+
     case RuntimeMonitor.valid_session?(get_session(conn, :user)) do
       false -> render(conn, "new.html")
       true -> redirect(conn, to: Routes.game_path(conn, :index))
