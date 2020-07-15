@@ -36,8 +36,8 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
       nil -> false
         _ ->
         case Map.has_key?(user, :session_key) do
-          nil -> false
-          key -> GenServer.call(__MODULE__, {:valid_session, user.session_key})
+          false -> false
+          true -> GenServer.call(__MODULE__, {:valid_session, user.session_key})
         end
     end
   end
