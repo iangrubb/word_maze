@@ -34,7 +34,11 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
   def valid_session?(user) do
     case user do
       nil -> false
-        _ -> GenServer.call(__MODULE__, {:valid_session, user.session_key})
+        _ ->
+        case user.session_key do
+          nil -> false
+          key -> GenServer.call(__MODULE__, {:valid_session, key})
+        end
     end
   end
 
