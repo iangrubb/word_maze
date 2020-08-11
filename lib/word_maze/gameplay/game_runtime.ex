@@ -116,7 +116,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
           submissions
           |> Enum.map(fn sub -> Words.extract_word_from_submission(sub) end)
           |> Enum.join(" and ")
-        message = "#{String.capitalize(player.color)} has played #{words} for #{added_score} points"
+        message = "#{String.capitalize(player.name)} has played #{words} for #{added_score} points"
 
         game_status = if updated_player.score >= 150, do: :complete, else: :running
 
