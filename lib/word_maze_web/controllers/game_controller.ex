@@ -6,7 +6,6 @@ defmodule WordMazeWeb.GameController do
 
   def index(conn, _params) do
 
-    IO.inspect(File.cwd())
 
     case RuntimeMonitor.valid_session?(get_session(conn, :user)) do
       false ->
