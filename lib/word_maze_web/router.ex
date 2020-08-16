@@ -1,6 +1,8 @@
 defmodule WordMazeWeb.Router do
   use WordMazeWeb, :router
 
+  import Phoenix.LiveDashboard.Router
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -20,6 +22,8 @@ defmodule WordMazeWeb.Router do
     resources "/games", GameController, only: [:index, :show]
     resources "/users", UserController, only: [:create]
     get "/", UserController, :new
+
+    live_dashboard "/dashboard"
 
   end
 

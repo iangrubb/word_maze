@@ -276666,6 +276666,8 @@ defmodule WordMaze.Gameplay.Dictionary do
     ZZZ
     ZZZS"
 
+    IO.puts (dictionary |> :erlang.term_to_binary() |> :erlang.byte_size())
+
     String.split(dictionary, "\n")
     |> Enum.map(fn word -> String.trim(word) end)
     |> Enum.member?(String.upcase(word))
