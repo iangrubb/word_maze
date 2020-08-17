@@ -1,6 +1,6 @@
 defmodule WordMaze.Gameplay.GameRuntime do
 
-  alias WordMaze.Gameplay.{ Visibility, GameInitializer, Players, Movement, Words, Letters, GameTimer }
+  alias WordMaze.Gameplay.{ RuntimeMonitor, Visibility, GameInitializer, Players, Movement, Words, Letters, GameTimer }
 
   use GenServer
 
@@ -76,6 +76,7 @@ defmodule WordMaze.Gameplay.GameRuntime do
         "game:#{state.game_id}", "server:game_complete",
         %{}
         )
+        RuntimeMonitor.end_game(state.game_id)
         {:noreply, %{state | duration: duration, status: :complete}}
       _ ->
         WordMazeWeb.Endpoint.broadcast(

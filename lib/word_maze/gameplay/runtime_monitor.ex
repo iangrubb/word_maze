@@ -42,6 +42,10 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
     end
   end
 
+  def end_game(game_id) do
+    GenServer.call(__MODULE__, {:end_game, game_id})
+  end
+
 
 
 
@@ -89,7 +93,6 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, %{waiting_users: waiting_users} = state) do
-    # Handles live view process termination
     case Enum.find_index(waiting_users, fn user -> user.view_pid == pid end) do
       nil -> {:noreply, state}
       idx -> {:noreply, %{ state | waiting_users: remove_from_list_at_index(waiting_users, idx) }}
@@ -114,6 +117,17 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
   def handle_call({:valid_session, session_key}, _, state) do
     {:reply, session_key == state.session_key , state}
   end
+
+  def handle_call({:end_game, game_id}, {game_pid, _ref}, state) do
+
+    {finished_game, new_games} = Map.pop(state.games, game_id)
+
+    DynamicSupervisor.terminate_child(WordMaze.GameRuntimeSupervisor, game_pid)
+
+    {:reply, :ok, %{state | games: new_games}}
+  end
+
+
 
 
 
