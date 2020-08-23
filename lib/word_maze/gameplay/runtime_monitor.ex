@@ -67,7 +67,7 @@ defmodule WordMaze.Gameplay.RuntimeMonitor do
 
     new_waiting_users = waiting_users ++ [ Map.merge(user, %{view_pid: view_pid, monitor_ref: monitor_ref}) ]
 
-    case Enum.count(new_waiting_users) >= 2 do
+    case Enum.count(new_waiting_users) >= 4 do
       true ->
         game_users = Enum.map(new_waiting_users, fn u -> %{id: u.id, name: u.name} end)
         new_game = %{id: game_id, players: game_users}
