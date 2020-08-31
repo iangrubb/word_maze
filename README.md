@@ -17,5 +17,4 @@ Game is live *[here](http://word-maze.gigalixirapp.com/)*. at time of writting, 
 
 ## Known issues
 
-- Memory limitations of the free gigalixir deployment limit the number of possible concurrent games.
 - Players lose their knowledge of previously view locations if they reconnect to the game. The relevant state needs to be refactored to live in the game process itself, rather than in the user's LiveView process.
