@@ -27,7 +27,7 @@ defmodule WordMazeWeb.GameLive.Lobby do
           </ul>
           <button phx-click="start-searching">Find a Game</button>
         <%= true -> %>
-          <h2>Finding a game...</h2>
+          <h3>Finding a game...</h3>
           <h5>Players:</h5>
           <ul class="menu-list">
             <%= for waiting_user <- @waiting_list do %>
